@@ -1874,19 +1874,19 @@ function _Platform_initialize(flagDecoder, args, init, update, subscriptions, st
 	var result = A2(_Json_run, flagDecoder, _Json_wrap(args ? args['flags'] : undefined));
 	$elm$core$Result$isOk(result) || _Debug_crash(2 /**/, _Json_errorToString(result.a) /**/);
 	var managers = {};
-	result = init(result.a);
-	var model = result.a;
+	var initPair = init(result.a);
+	var model = initPair.a;
 	var stepper = stepperBuilder(sendToApp, model);
 	var ports = _Platform_setupEffects(managers, sendToApp);
 
 	function sendToApp(msg, viewMetadata)
 	{
-		result = A2(update, msg, model);
-		stepper(model = result.a, viewMetadata);
-		_Platform_enqueueEffects(managers, result.b, subscriptions(model));
+		var pair = A2(update, msg, model);
+		stepper(model = pair.a, viewMetadata);
+		_Platform_enqueueEffects(managers, pair.b, subscriptions(model));
 	}
 
-	_Platform_enqueueEffects(managers, result.b, subscriptions(model));
+	_Platform_enqueueEffects(managers, initPair.b, subscriptions(model));
 
 	return ports ? { ports: ports } : {};
 }
@@ -2618,16 +2618,33 @@ var _VirtualDom_attributeNS = F3(function(namespace, key, value)
 
 
 // XSS ATTACK VECTOR CHECKS
+//
+// For some reason, tabs can appear in href protocols and it still works.
+// So '\tjava\tSCRIPT:alert("!!!")' and 'javascript:alert("!!!")' are the same
+// in practice. That is why _VirtualDom_RE_js and _VirtualDom_RE_js_html look
+// so freaky.
+//
+// Pulling the regular expressions out to the top level gives a slight speed
+// boost in small benchmarks (4-10%) but hoisting values to reduce allocation
+// can be unpredictable in large programs where JIT may have a harder time with
+// functions are not fully self-contained. The benefit is more that the js and
+// js_html ones are so weird that I prefer to see them near each other.
+
+
+var _VirtualDom_RE_script = /^script$/i;
+var _VirtualDom_RE_on_formAction = /^(on|formAction$)/i;
+var _VirtualDom_RE_js = /^\s*j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/i;
+var _VirtualDom_RE_js_html = /^\s*(j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:|d\s*a\s*t\s*a\s*:\s*t\s*e\s*x\s*t\s*\/\s*h\s*t\s*m\s*l\s*(,|;))/i;
 
 
 function _VirtualDom_noScript(tag)
 {
-	return tag == 'script' ? 'p' : tag;
+	return _VirtualDom_RE_script.test(tag) ? 'p' : tag;
 }
 
 function _VirtualDom_noOnOrFormAction(key)
 {
-	return /^(on|formAction$)/i.test(key) ? 'data-' + key : key;
+	return _VirtualDom_RE_on_formAction.test(key) ? 'data-' + key : key;
 }
 
 function _VirtualDom_noInnerHtmlOrFormAction(key)
@@ -2635,28 +2652,26 @@ function _VirtualDom_noInnerHtmlOrFormAction(key)
 	return key == 'innerHTML' || key == 'formAction' ? 'data-' + key : key;
 }
 
-function _VirtualDom_noJavaScriptUri_UNUSED(value)
-{
-	return /^javascript:/i.test(value.replace(/\s/g,'')) ? '' : value;
-}
-
 function _VirtualDom_noJavaScriptUri(value)
 {
-	return /^javascript:/i.test(value.replace(/\s/g,''))
-		? 'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'
+	return _VirtualDom_RE_js.test(value)
+		? /**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
 		: value;
-}
-
-function _VirtualDom_noJavaScriptOrHtmlUri_UNUSED(value)
-{
-	return /^\s*(javascript:|data:text\/html)/i.test(value) ? '' : value;
 }
 
 function _VirtualDom_noJavaScriptOrHtmlUri(value)
 {
-	return /^\s*(javascript:|data:text\/html)/i.test(value)
-		? 'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'
+	return _VirtualDom_RE_js_html.test(value)
+		? /**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
 		: value;
+}
+
+function _VirtualDom_noJavaScriptOrHtmlJson(value)
+{
+	return (typeof _Json_unwrap(value) === 'string' && _VirtualDom_RE_js_html.test(_Json_unwrap(value)))
+		? _Json_wrap(
+			/**_UNUSED/''//*//**/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		) : value;
 }
 
 
@@ -4762,17 +4777,26 @@ function _Http_track(router, xhr, tracker)
 			size: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
-}var $author$project$Main$GotRandomBytes = function (a) {
+}var $author$project$Myride$GotRandomBytes = function (a) {
 	return {$: 'GotRandomBytes', a: a};
 };
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var $author$project$Main$NoOp = {$: 'NoOp'};
+var $author$project$Myride$NoOp = {$: 'NoOp'};
 var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
 	});
 var $elm$core$Basics$apL = F2(
 	function (f, x) {
@@ -6197,7 +6221,164 @@ var $chelovek0v$bbase64$Base64$Encode$encode = function (encoder) {
 			$chelovek0v$bbase64$Base64$Encode$tryEncode(input));
 	}
 };
-var $author$project$Main$base64 = A2($elm$core$Basics$composeR, $chelovek0v$bbase64$Base64$Encode$bytes, $chelovek0v$bbase64$Base64$Encode$encode);
+var $author$project$Myride$base64 = A2($elm$core$Basics$composeR, $chelovek0v$bbase64$Base64$Encode$bytes, $chelovek0v$bbase64$Base64$Encode$encode);
+var $author$project$Myride$cCODE_VERIFIER_SIZE = 32;
+var $author$project$Myride$cSTATE_SIZE = 8;
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$CodeVerifier = function (a) {
+	return {$: 'CodeVerifier', a: a};
+};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeVerifierFromBytes = function (bytes) {
+	return (($elm$bytes$Bytes$width(bytes) < 32) || ($elm$bytes$Bytes$width(bytes) > 90)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$CodeVerifier(
+			$chelovek0v$bbase64$Base64$Encode$bytes(bytes)));
+};
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
 var $elm$bytes$Bytes$Encode$Seq = F2(
 	function (a, b) {
 		return {$: 'Seq', a: a, b: b};
@@ -6229,69 +6410,50 @@ var $elm$bytes$Bytes$Encode$U8 = function (a) {
 	return {$: 'U8', a: a};
 };
 var $elm$bytes$Bytes$Encode$unsignedInt8 = $elm$bytes$Bytes$Encode$U8;
-var $author$project$Main$toBytes = A2(
+var $author$project$Myride$toBytes = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$List$map($elm$bytes$Bytes$Encode$unsignedInt8),
 	A2($elm$core$Basics$composeR, $elm$bytes$Bytes$Encode$sequence, $elm$bytes$Bytes$Encode$encode));
-var $author$project$Main$convertBytes = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Main$toBytes,
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Main$base64,
-		function (state) {
-			return {state: state};
-		}));
-var $author$project$Main$AccessTokenRequested = {$: 'AccessTokenRequested'};
-var $author$project$Main$Authorized = function (a) {
-	return {$: 'Authorized', a: a};
+var $author$project$Myride$convertBytes = function (bytes) {
+	if (_Utils_cmp(
+		$elm$core$List$length(bytes),
+		$author$project$Myride$cSTATE_SIZE + $author$project$Myride$cCODE_VERIFIER_SIZE) < 0) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var state = $author$project$Myride$base64(
+			$author$project$Myride$toBytes(
+				A2($elm$core$List$take, $author$project$Myride$cSTATE_SIZE, bytes)));
+		var mCodeVerifier = $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeVerifierFromBytes(
+			$author$project$Myride$toBytes(
+				A2($elm$core$List$drop, $author$project$Myride$cSTATE_SIZE, bytes)));
+		return A2(
+			$elm$core$Maybe$map,
+			function (codeVerifier) {
+				return {codeVerifier: codeVerifier, state: state};
+			},
+			mCodeVerifier);
+	}
 };
-var $author$project$Main$ErrAuthorization = function (a) {
+var $author$project$Myride$AccessTokenRequested = {$: 'AccessTokenRequested'};
+var $author$project$Myride$Authorized = F2(
+	function (a, b) {
+		return {$: 'Authorized', a: a, b: b};
+	});
+var $author$project$Myride$ErrAuthorization = function (a) {
 	return {$: 'ErrAuthorization', a: a};
 };
-var $author$project$Main$ErrStateMismatch = {$: 'ErrStateMismatch'};
-var $author$project$Main$Errored = function (a) {
+var $author$project$Myride$ErrStateMismatch = {$: 'ErrStateMismatch'};
+var $author$project$Myride$Errored = function (a) {
 	return {$: 'Errored', a: a};
 };
-var $author$project$Main$Idle = {$: 'Idle'};
-var $andrewMacmurray$elm_delay$Delay$Millisecond = {$: 'Millisecond'};
-var $andrewMacmurray$elm_delay$Delay$Duration = F2(
-	function (a, b) {
-		return {$: 'Duration', a: a, b: b};
-	});
+var $author$project$Myride$Idle = {$: 'Idle'};
 var $elm$core$Process$sleep = _Process_sleep;
-var $andrewMacmurray$elm_delay$Delay$after_ = F2(
+var $andrewMacmurray$elm_delay$Delay$after = F2(
 	function (time, msg) {
 		return A2(
 			$elm$core$Task$perform,
 			$elm$core$Basics$always(msg),
 			$elm$core$Process$sleep(time));
-	});
-var $andrewMacmurray$elm_delay$Delay$Minute = {$: 'Minute'};
-var $andrewMacmurray$elm_delay$Delay$Second = {$: 'Second'};
-var $andrewMacmurray$elm_delay$Delay$toMillis = function (_v0) {
-	var t = _v0.a;
-	var u = _v0.b;
-	switch (u.$) {
-		case 'Millisecond':
-			return t;
-		case 'Second':
-			return 1000 * t;
-		case 'Minute':
-			return $andrewMacmurray$elm_delay$Delay$toMillis(
-				A2($andrewMacmurray$elm_delay$Delay$Duration, 60 * t, $andrewMacmurray$elm_delay$Delay$Second));
-		default:
-			return $andrewMacmurray$elm_delay$Delay$toMillis(
-				A2($andrewMacmurray$elm_delay$Delay$Duration, 60 * t, $andrewMacmurray$elm_delay$Delay$Minute));
-	}
-};
-var $andrewMacmurray$elm_delay$Delay$after = F3(
-	function (time, unit, msg) {
-		return A2(
-			$andrewMacmurray$elm_delay$Delay$after_,
-			$andrewMacmurray$elm_delay$Delay$toMillis(
-				A2($andrewMacmurray$elm_delay$Delay$Duration, time, unit)),
-			msg);
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Basics$neq = _Utils_notEqual;
@@ -6352,8 +6514,8 @@ var $truqu$elm_oauth2$Internal$authorizationErrorParser = function (errorCode) {
 		$truqu$elm_oauth2$Internal$errorUriParser,
 		$truqu$elm_oauth2$Internal$stateParser);
 };
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthorizationErrorParser = $truqu$elm_oauth2$Internal$authorizationErrorParser;
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$AuthorizationSuccess = F2(
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthorizationErrorParser = $truqu$elm_oauth2$Internal$authorizationErrorParser;
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$AuthorizationSuccess = F2(
 	function (code, state) {
 		return {code: code, state: state};
 	});
@@ -6366,13 +6528,13 @@ var $elm$url$Url$Parser$Query$map = F2(
 					a(dict));
 			});
 	});
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthorizationSuccessParser = function (code) {
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthorizationSuccessParser = function (code) {
 	return A2(
 		$elm$url$Url$Parser$Query$map,
-		$truqu$elm_oauth2$OAuth$AuthorizationCode$AuthorizationSuccess(code),
+		$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$AuthorizationSuccess(code),
 		$truqu$elm_oauth2$Internal$stateParser);
 };
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultCodeParser = $elm$url$Url$Parser$Query$string('code');
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultCodeParser = $elm$url$Url$Parser$Query$string('code');
 var $truqu$elm_oauth2$OAuth$AccessDenied = {$: 'AccessDenied'};
 var $truqu$elm_oauth2$OAuth$Custom = function (a) {
 	return {$: 'Custom', a: a};
@@ -6409,8 +6571,15 @@ var $truqu$elm_oauth2$Internal$errorParser = function (errorCodeFromString) {
 		$elm$core$Maybe$map(errorCodeFromString),
 		$elm$url$Url$Parser$Query$string('error'));
 };
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorParser = $truqu$elm_oauth2$Internal$errorParser($truqu$elm_oauth2$OAuth$errorCodeFromString);
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultParsers = {authorizationErrorParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthorizationErrorParser, authorizationSuccessParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthorizationSuccessParser, codeParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultCodeParser, errorParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorParser};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultErrorParser = $truqu$elm_oauth2$Internal$errorParser($truqu$elm_oauth2$OAuth$errorCodeFromString);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultParsers = {authorizationErrorParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthorizationErrorParser, authorizationSuccessParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthorizationSuccessParser, codeParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultCodeParser, errorParser: $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultErrorParser};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Empty = {$: 'Empty'};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Error = function (a) {
+	return {$: 'Error', a: a};
+};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Success = function (a) {
+	return {$: 'Success', a: a};
+};
 var $truqu$elm_oauth2$OAuth$AuthorizationCode$Empty = {$: 'Empty'};
 var $truqu$elm_oauth2$OAuth$AuthorizationCode$Error = function (a) {
 	return {$: 'Error', a: a};
@@ -7053,7 +7222,21 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$parseCodeWith = F2(
 		}
 		return $truqu$elm_oauth2$OAuth$AuthorizationCode$Empty;
 	});
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$parseCode = $truqu$elm_oauth2$OAuth$AuthorizationCode$parseCodeWith($truqu$elm_oauth2$OAuth$AuthorizationCode$defaultParsers);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$parseCodeWith = F2(
+	function (parsers, url) {
+		var _v0 = A2($truqu$elm_oauth2$OAuth$AuthorizationCode$parseCodeWith, parsers, url);
+		switch (_v0.$) {
+			case 'Empty':
+				return $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Empty;
+			case 'Success':
+				var s = _v0.a;
+				return $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Success(s);
+			default:
+				var e = _v0.a;
+				return $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$Error(e);
+		}
+	});
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$parseCode = $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$parseCodeWith($truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultParsers);
 var $elm$browser$Browser$Navigation$replaceUrl = _Browser_replaceUrl;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
@@ -7099,7 +7282,7 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
-var $author$project$Main$init = F3(
+var $author$project$Myride$init = F3(
 	function (mflags, origin, navigationKey) {
 		var redirectUri = _Utils_update(
 			origin,
@@ -7108,11 +7291,11 @@ var $author$project$Main$init = F3(
 			$elm$browser$Browser$Navigation$replaceUrl,
 			navigationKey,
 			$elm$url$Url$toString(redirectUri));
-		var _v0 = $truqu$elm_oauth2$OAuth$AuthorizationCode$parseCode(origin);
+		var _v0 = $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$parseCode(origin);
 		switch (_v0.$) {
 			case 'Empty':
 				return _Utils_Tuple2(
-					{flow: $author$project$Main$Idle, redirectUri: redirectUri},
+					{flow: $author$project$Myride$Idle, redirectUri: redirectUri},
 					$elm$core$Platform$Cmd$none);
 			case 'Success':
 				var code = _v0.a.code;
@@ -7120,7 +7303,7 @@ var $author$project$Main$init = F3(
 				if (mflags.$ === 'Nothing') {
 					return _Utils_Tuple2(
 						{
-							flow: $author$project$Main$Errored($author$project$Main$ErrStateMismatch),
+							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
 							redirectUri: redirectUri
 						},
 						clearUrl);
@@ -7130,18 +7313,18 @@ var $author$project$Main$init = F3(
 						state,
 						$elm$core$Maybe$Just(flags.state))) ? _Utils_Tuple2(
 						{
-							flow: $author$project$Main$Errored($author$project$Main$ErrStateMismatch),
+							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
 							redirectUri: redirectUri
 						},
 						clearUrl) : _Utils_Tuple2(
 						{
-							flow: $author$project$Main$Authorized(code),
+							flow: A2($author$project$Myride$Authorized, code, flags.codeVerifier),
 							redirectUri: redirectUri
 						},
 						$elm$core$Platform$Cmd$batch(
 							_List_fromArray(
 								[
-									A3($andrewMacmurray$elm_delay$Delay$after, 750, $andrewMacmurray$elm_delay$Delay$Millisecond, $author$project$Main$AccessTokenRequested),
+									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$AccessTokenRequested),
 									clearUrl
 								])));
 				}
@@ -7149,8 +7332,8 @@ var $author$project$Main$init = F3(
 				var error = _v0.a;
 				return _Utils_Tuple2(
 					{
-						flow: $author$project$Main$Errored(
-							$author$project$Main$ErrAuthorization(error)),
+						flow: $author$project$Myride$Errored(
+							$author$project$Myride$ErrAuthorization(error)),
 						redirectUri: redirectUri
 					},
 					clearUrl);
@@ -7160,38 +7343,37 @@ var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $author$project$Main$randomBytes = _Platform_incomingPort(
+var $author$project$Myride$randomBytes = _Platform_incomingPort(
 	'randomBytes',
 	$elm$json$Json$Decode$list($elm$json$Json$Decode$int));
-var $author$project$Main$UserInfo = F2(
-	function (firstname, lastname) {
-		return {firstname: firstname, lastname: lastname};
+var $author$project$Myride$UserInfo = F2(
+	function (name, picture) {
+		return {name: name, picture: picture};
 	});
-var $author$project$Main$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: '', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
+var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: '', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Main$ohost = 'www.strava.com';
+var $author$project$Myride$ohost = 'www.strava.com';
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$configuration = {
+var $author$project$Myride$configuration = {
 	authorizationEndpoint: _Utils_update(
-		$author$project$Main$defaultHttpsUrl,
-		{host: $author$project$Main$ohost, path: '/oauth/authorize'}),
+		$author$project$Myride$defaultHttpsUrl,
+		{host: $author$project$Myride$ohost, path: '/oauth/authorize'}),
 	clientId: '68838',
-	clientSecret: $elm$core$Maybe$Just('bee8686fc893568412f98144895793c28ae48cdc'),
 	scope: _List_fromArray(
 		['read']),
 	tokenEndpoint: _Utils_update(
-		$author$project$Main$defaultHttpsUrl,
-		{host: $author$project$Main$ohost, path: '/oauth/token'}),
+		$author$project$Myride$defaultHttpsUrl,
+		{host: $author$project$Myride$ohost, path: '/oauth/token'}),
 	userInfoDecoder: A3(
 		$elm$json$Json$Decode$map2,
-		$author$project$Main$UserInfo,
+		$author$project$Myride$UserInfo,
 		A2($elm$json$Json$Decode$field, 'firstname', $elm$json$Json$Decode$string),
 		A2($elm$json$Json$Decode$field, 'lastname', $elm$json$Json$Decode$string)),
 	userInfoEndpoint: _Utils_update(
-		$author$project$Main$defaultHttpsUrl,
-		{host: $author$project$Main$ohost, path: '/athlete'})
+		$author$project$Myride$defaultHttpsUrl,
+		{host: $author$project$Myride$ohost, path: '/athlete'})
 };
-var $author$project$Main$GotAccessToken = function (a) {
+var $author$project$Myride$GotAccessToken = function (a) {
 	return {$: 'GotAccessToken', a: a};
 };
 var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
@@ -7219,15 +7401,6 @@ var $truqu$elm_oauth2$Internal$decoderFromJust = function (msg) {
 		$elm$core$Maybe$withDefault(
 			$elm$json$Json$Decode$fail(msg)));
 };
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
 		if (ma.$ === 'Nothing') {
@@ -7319,7 +7492,28 @@ var $truqu$elm_oauth2$Internal$tokenDecoder = A2(
 			$elm$core$Maybe$Just,
 			A2($elm$json$Json$Decode$field, 'access_token', $elm$json$Json$Decode$string))));
 var $truqu$elm_oauth2$Internal$authenticationSuccessDecoder = A5($elm$json$Json$Decode$map4, $truqu$elm_oauth2$Internal$AuthenticationSuccess, $truqu$elm_oauth2$Internal$tokenDecoder, $truqu$elm_oauth2$Internal$refreshTokenDecoder, $truqu$elm_oauth2$Internal$expiresInDecoder, $truqu$elm_oauth2$Internal$scopeDecoder);
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder = $truqu$elm_oauth2$Internal$authenticationSuccessDecoder;
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthenticationSuccessDecoder = $truqu$elm_oauth2$Internal$authenticationSuccessDecoder;
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$base64UrlEncode = A2(
+	$elm$core$Basics$composeR,
+	$chelovek0v$bbase64$Base64$Encode$encode,
+	A2(
+		$elm$core$Basics$composeR,
+		A2($elm$core$String$replace, '=', ''),
+		A2(
+			$elm$core$Basics$composeR,
+			A2($elm$core$String$replace, '+', '-'),
+			A2($elm$core$String$replace, '/', '_'))));
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeVerifierToString = function (_v0) {
+	var str = _v0.a;
+	return $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$base64UrlEncode(str);
+};
 var $truqu$elm_oauth2$OAuth$grantTypeToString = function (g) {
 	switch (g.$) {
 		case 'AuthorizationCode':
@@ -7593,7 +7787,58 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith = F5(
 						]))));
 		return A5($truqu$elm_oauth2$Internal$makeRequest, decoder, toMsg, url, headers, body);
 	});
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequest = A3($truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith, $truqu$elm_oauth2$OAuth$AuthorizationCode, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder, $elm$core$Dict$empty);
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeTokenRequestWith = F5(
+	function (grantType, decoder, extraFields, toMsg, _v0) {
+		var credentials = _v0.credentials;
+		var code = _v0.code;
+		var codeVerifier = _v0.codeVerifier;
+		var url = _v0.url;
+		var redirectUri = _v0.redirectUri;
+		var extraInternalFields = $elm$core$Dict$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'code_verifier',
+					$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeVerifierToString(codeVerifier))
+				]));
+		return A5(
+			$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith,
+			grantType,
+			decoder,
+			A2($elm$core$Dict$union, extraFields, extraInternalFields),
+			toMsg,
+			{code: code, credentials: credentials, redirectUri: redirectUri, url: url});
+	});
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeTokenRequest = A3($truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeTokenRequestWith, $truqu$elm_oauth2$OAuth$AuthorizationCode, $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthenticationSuccessDecoder, $elm$core$Dict$empty);
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -7762,40 +8007,40 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
-var $author$project$Main$getAccessToken = F3(
-	function (_v0, redirectUri, code) {
+var $author$project$Myride$getAccessToken = F4(
+	function (_v0, redirectUri, code, codeVerifier) {
 		var clientId = _v0.clientId;
-		var clientSecret = _v0.clientSecret;
 		var tokenEndpoint = _v0.tokenEndpoint;
 		return $elm$http$Http$request(
 			A2(
-				$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequest,
-				$author$project$Main$GotAccessToken,
+				$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeTokenRequest,
+				$author$project$Myride$GotAccessToken,
 				{
 					code: code,
-					credentials: {clientId: clientId, secret: clientSecret},
+					codeVerifier: codeVerifier,
+					credentials: {clientId: clientId, secret: $elm$core$Maybe$Nothing},
 					redirectUri: redirectUri,
 					url: tokenEndpoint
 				}));
 	});
-var $author$project$Main$accessTokenRequested = F2(
-	function (model, code) {
+var $author$project$Myride$accessTokenRequested = F3(
+	function (model, code, codeVerifier) {
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
 				{
-					flow: $author$project$Main$Authorized(code)
+					flow: A2($author$project$Myride$Authorized, code, codeVerifier)
 				}),
-			A3($author$project$Main$getAccessToken, $author$project$Main$configuration, model.redirectUri, code));
+			A4($author$project$Myride$getAccessToken, $author$project$Myride$configuration, model.redirectUri, code, codeVerifier));
 	});
-var $author$project$Main$Authenticated = function (a) {
+var $author$project$Myride$Authenticated = function (a) {
 	return {$: 'Authenticated', a: a};
 };
-var $author$project$Main$ErrAuthentication = function (a) {
+var $author$project$Myride$ErrAuthentication = function (a) {
 	return {$: 'ErrAuthentication', a: a};
 };
-var $author$project$Main$ErrHTTPGetAccessToken = {$: 'ErrHTTPGetAccessToken'};
-var $author$project$Main$UserInfoRequested = {$: 'UserInfoRequested'};
+var $author$project$Myride$ErrHTTPGetAccessToken = {$: 'ErrHTTPGetAccessToken'};
+var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
 var $truqu$elm_oauth2$Internal$AuthenticationError = F3(
 	function (error, errorDescription, errorUri) {
 		return {error: error, errorDescription: errorDescription, errorUri: errorUri};
@@ -7814,22 +8059,22 @@ var $truqu$elm_oauth2$Internal$errorDecoder = function (errorCodeFromString) {
 		errorCodeFromString,
 		A2($elm$json$Json$Decode$field, 'error', $elm$json$Json$Decode$string));
 };
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorDecoder = $truqu$elm_oauth2$Internal$errorDecoder($truqu$elm_oauth2$OAuth$errorCodeFromString);
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationErrorDecoder = $truqu$elm_oauth2$Internal$authenticationErrorDecoder($truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorDecoder);
-var $author$project$Main$gotAccessToken = F2(
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultErrorDecoder = $truqu$elm_oauth2$Internal$errorDecoder($truqu$elm_oauth2$OAuth$errorCodeFromString);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthenticationErrorDecoder = $truqu$elm_oauth2$Internal$authenticationErrorDecoder($truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultErrorDecoder);
+var $author$project$Myride$gotAccessToken = F2(
 	function (model, authenticationResponse) {
 		if (authenticationResponse.$ === 'Err') {
 			if (authenticationResponse.a.$ === 'BadBody') {
 				var body = authenticationResponse.a.a;
-				var _v1 = A2($elm$json$Json$Decode$decodeString, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationErrorDecoder, body);
+				var _v1 = A2($elm$json$Json$Decode$decodeString, $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$defaultAuthenticationErrorDecoder, body);
 				if (_v1.$ === 'Ok') {
 					var error = _v1.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
-								flow: $author$project$Main$Errored(
-									$author$project$Main$ErrAuthentication(error))
+								flow: $author$project$Myride$Errored(
+									$author$project$Myride$ErrAuthentication(error))
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -7837,7 +8082,7 @@ var $author$project$Main$gotAccessToken = F2(
 						_Utils_update(
 							model,
 							{
-								flow: $author$project$Main$Errored($author$project$Main$ErrHTTPGetAccessToken)
+								flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetAccessToken)
 							}),
 						$elm$core$Platform$Cmd$none);
 				}
@@ -7846,7 +8091,7 @@ var $author$project$Main$gotAccessToken = F2(
 					_Utils_update(
 						model,
 						{
-							flow: $author$project$Main$Errored($author$project$Main$ErrHTTPGetAccessToken)
+							flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetAccessToken)
 						}),
 					$elm$core$Platform$Cmd$none);
 			}
@@ -7856,13 +8101,18 @@ var $author$project$Main$gotAccessToken = F2(
 				_Utils_update(
 					model,
 					{
-						flow: $author$project$Main$Authenticated(token)
+						flow: $author$project$Myride$Authenticated(token)
 					}),
-				A3($andrewMacmurray$elm_delay$Delay$after, 750, $andrewMacmurray$elm_delay$Delay$Millisecond, $author$project$Main$UserInfoRequested));
+				A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$UserInfoRequested));
 		}
 	});
+var $author$project$Myride$ErrFailedToConvertBytes = {$: 'ErrFailedToConvertBytes'};
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $truqu$elm_oauth2$OAuth$Code = {$: 'Code'};
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeChallengeToString = function (_v0) {
+	var str = _v0.a;
+	return $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$base64UrlEncode(str);
+};
 var $truqu$elm_oauth2$OAuth$responseTypeToString = function (r) {
 	switch (r.$) {
 		case 'Code':
@@ -7971,38 +8221,744 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrlWith = F3(
 			extraFields,
 			{clientId: clientId, redirectUri: redirectUri, scope: scope, state: state, url: url});
 	});
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl = A2($truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrlWith, $truqu$elm_oauth2$OAuth$Code, $elm$core$Dict$empty);
-var $author$project$Main$gotRandomBytes = F2(
-	function (model, bytes) {
-		var _v0 = $author$project$Main$convertBytes(bytes);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeAuthorizationUrlWith = F3(
+	function (responseType, extraFields, _v0) {
+		var clientId = _v0.clientId;
+		var url = _v0.url;
+		var redirectUri = _v0.redirectUri;
+		var scope = _v0.scope;
 		var state = _v0.state;
-		var authorization = {
-			clientId: $author$project$Main$configuration.clientId,
-			redirectUri: model.redirectUri,
-			scope: $author$project$Main$configuration.scope,
-			state: $elm$core$Maybe$Just(state),
-			url: $author$project$Main$configuration.authorizationEndpoint
-		};
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{flow: $author$project$Main$Idle}),
-			$elm$browser$Browser$Navigation$load(
-				$elm$url$Url$toString(
-					$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl(authorization))));
+		var codeChallenge = _v0.codeChallenge;
+		var extraInternalFields = $elm$core$Dict$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'code_challenge',
+					$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeChallengeToString(codeChallenge)),
+					_Utils_Tuple2('code_challenge_method', 'S256')
+				]));
+		return A3(
+			$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrlWith,
+			responseType,
+			A2($elm$core$Dict$union, extraFields, extraInternalFields),
+			{clientId: clientId, redirectUri: redirectUri, scope: scope, state: state, url: url});
 	});
-var $author$project$Main$Done = function (a) {
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeAuthorizationUrl = A2($truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeAuthorizationUrlWith, $truqu$elm_oauth2$OAuth$Code, $elm$core$Dict$empty);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$CodeChallenge = function (a) {
+	return {$: 'CodeChallenge', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$Digest = function (a) {
+	return {$: 'Digest', a: a};
+};
+var $folkertdev$elm_sha2$Internal$SHA256$Tuple8 = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {$: 'Tuple8', a: a, b: b, c: c, d: d, e: e, f: f, g: g, h: h};
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$loopHelp = F2(
+	function (step, _v0) {
+		var n = _v0.a;
+		var state = _v0.b;
+		return (n > 0) ? A2(
+			$elm$bytes$Bytes$Decode$map,
+			function (_new) {
+				return $elm$bytes$Bytes$Decode$Loop(
+					_Utils_Tuple2(n - 1, _new));
+			},
+			step(state)) : $elm$bytes$Bytes$Decode$succeed(
+			$elm$bytes$Bytes$Decode$Done(state));
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$iterate = F3(
+	function (n, step, initial) {
+		return A2(
+			$elm$bytes$Bytes$Decode$loop,
+			_Utils_Tuple2(n, initial),
+			$folkertdev$elm_sha2$Internal$SHA256$loopHelp(step));
+	});
+var $elm$bytes$Bytes$Decode$map5 = F6(
+	function (func, _v0, _v1, _v2, _v3, _v4) {
+		var decodeA = _v0.a;
+		var decodeB = _v1.a;
+		var decodeC = _v2.a;
+		var decodeD = _v3.a;
+		var decodeE = _v4.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v5 = A2(decodeA, bites, offset);
+					var aOffset = _v5.a;
+					var a = _v5.b;
+					var _v6 = A2(decodeB, bites, aOffset);
+					var bOffset = _v6.a;
+					var b = _v6.b;
+					var _v7 = A2(decodeC, bites, bOffset);
+					var cOffset = _v7.a;
+					var c = _v7.b;
+					var _v8 = A2(decodeD, bites, cOffset);
+					var dOffset = _v8.a;
+					var d = _v8.b;
+					var _v9 = A2(decodeE, bites, dOffset);
+					var eOffset = _v9.a;
+					var e = _v9.b;
+					return _Utils_Tuple2(
+						eOffset,
+						A5(func, a, b, c, d, e));
+				}));
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$map16 = function (f) {
+	return function (b1) {
+		return function (b2) {
+			return function (b3) {
+				return function (b4) {
+					return function (b5) {
+						return function (b6) {
+							return function (b7) {
+								return function (b8) {
+									return function (b9) {
+										return function (b10) {
+											return function (b11) {
+												return function (b12) {
+													return function (b13) {
+														return function (b14) {
+															return function (b15) {
+																return function (b16) {
+																	return A6(
+																		$elm$bytes$Bytes$Decode$map5,
+																		F5(
+																			function (a, b, c, d, e) {
+																				return A4(e, d, c, b, a);
+																			}),
+																		b16,
+																		b15,
+																		b14,
+																		b13,
+																		A6(
+																			$elm$bytes$Bytes$Decode$map5,
+																			F5(
+																				function (a, b, c, d, e) {
+																					return A4(e, d, c, b, a);
+																				}),
+																			b12,
+																			b11,
+																			b10,
+																			b9,
+																			A6(
+																				$elm$bytes$Bytes$Decode$map5,
+																				F5(
+																					function (a, b, c, d, e) {
+																						return A4(e, d, c, b, a);
+																					}),
+																				b8,
+																				b7,
+																				b6,
+																				b5,
+																				A6(
+																					$elm$bytes$Bytes$Decode$map5,
+																					F5(
+																						function (a, b, c, d, e) {
+																							return A4(e, d, c, b, a);
+																						}),
+																					b4,
+																					b3,
+																					b2,
+																					b1,
+																					$elm$bytes$Bytes$Decode$succeed(f)))));
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $folkertdev$elm_sha2$Internal$SHA256$DeltaState = function (a) {
+	return {$: 'DeltaState', a: a};
+};
+var $folkertdev$elm_sha2$Internal$SHA256$State = function (a) {
+	return {$: 'State', a: a};
+};
+var $elm$core$Bitwise$complement = _Bitwise_complement;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $folkertdev$elm_sha2$Internal$SHA256$ks = $elm$core$Array$fromList(
+	_List_fromArray(
+		[1116352408, 1899447441, 3049323471, 3921009573, 961987163, 1508970993, 2453635748, 2870763221, 3624381080, 310598401, 607225278, 1426881987, 1925078388, 2162078206, 2614888103, 3248222580, 3835390401, 4022224774, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, 2554220882, 2821834349, 2952996808, 3210313671, 3336571891, 3584528711, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, 2177026350, 2456956037, 2730485921, 2820302411, 3259730800, 3345764771, 3516065817, 3600352804, 4094571909, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, 2227730452, 2361852424, 2428436474, 2756734187, 3204031479, 3329325298]));
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas = F3(
+	function (index, w, _v0) {
+		var _v1 = _v0.a;
+		var a = _v1.a;
+		var b = _v1.b;
+		var c = _v1.c;
+		var d = _v1.d;
+		var e = _v1.e;
+		var f = _v1.f;
+		var g = _v1.g;
+		var h = _v1.h;
+		var maj = (b & c) ^ (a & (b ^ c));
+		var k = function () {
+			var _v2 = A2($elm$core$Array$get, index, $folkertdev$elm_sha2$Internal$SHA256$ks);
+			if (_v2.$ === 'Nothing') {
+				return 0;
+			} else {
+				var v = _v2.a;
+				return v;
+			}
+		}();
+		var ch = (((~e) & g) ^ (e & f)) >>> 0;
+		var bigSigma1 = ((e << (32 - 25)) | (e >>> 25)) ^ (((e << (32 - 11)) | (e >>> 11)) ^ ((e << (32 - 6)) | (e >>> 6)));
+		var t1 = (((h + bigSigma1) + ch) + k) + w;
+		var newE = (d + t1) >>> 0;
+		var bigSigma0 = ((a << (32 - 22)) | (a >>> 22)) ^ (((a << (32 - 13)) | (a >>> 13)) ^ ((a << (32 - 2)) | (a >>> 2)));
+		var t2 = bigSigma0 + maj;
+		var newA = (t1 + t2) >>> 0;
+		var result = A8($folkertdev$elm_sha2$Internal$SHA256$Tuple8, newA, a, b, c, newE, e, f, g);
+		var alt = (e >>> 25) ^ ((e << (32 - 25)) ^ ((e >>> 11) ^ ((e << (32 - 11)) ^ ((e >>> 6) ^ (e << (32 - 6))))));
+		return $folkertdev$elm_sha2$Internal$SHA256$DeltaState(result);
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$numberOfWords = 16;
+var $folkertdev$elm_sha2$Internal$SHA256$reduceWordsHelp = function (i) {
+	return function (deltaState) {
+		return function (b16) {
+			return function (b15) {
+				return function (b14) {
+					return function (b13) {
+						return function (b12) {
+							return function (b11) {
+								return function (b10) {
+									return function (b9) {
+										return function (b8) {
+											return function (b7) {
+												return function (b6) {
+													return function (b5) {
+														return function (b4) {
+															return function (b3) {
+																return function (b2) {
+																	return function (b1) {
+																		reduceWordsHelp:
+																		while (true) {
+																			if (i < 48) {
+																				var smallSigma1 = (b2 >>> 10) ^ (((b2 << (32 - 19)) | (b2 >>> 19)) ^ ((b2 << (32 - 17)) | (b2 >>> 17)));
+																				var smallSigma0 = (b15 >>> 3) ^ (((b15 << (32 - 18)) | (b15 >>> 18)) ^ ((b15 << (32 - 7)) | (b15 >>> 7)));
+																				var w = (((smallSigma1 + b7) + smallSigma0) + b16) >>> 0;
+																				var $temp$i = i + 1,
+																					$temp$deltaState = A3($folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas, i + $folkertdev$elm_sha2$Internal$SHA256$numberOfWords, w, deltaState),
+																					$temp$b16 = b15,
+																					$temp$b15 = b14,
+																					$temp$b14 = b13,
+																					$temp$b13 = b12,
+																					$temp$b12 = b11,
+																					$temp$b11 = b10,
+																					$temp$b10 = b9,
+																					$temp$b9 = b8,
+																					$temp$b8 = b7,
+																					$temp$b7 = b6,
+																					$temp$b6 = b5,
+																					$temp$b5 = b4,
+																					$temp$b4 = b3,
+																					$temp$b3 = b2,
+																					$temp$b2 = b1,
+																					$temp$b1 = w;
+																				i = $temp$i;
+																				deltaState = $temp$deltaState;
+																				b16 = $temp$b16;
+																				b15 = $temp$b15;
+																				b14 = $temp$b14;
+																				b13 = $temp$b13;
+																				b12 = $temp$b12;
+																				b11 = $temp$b11;
+																				b10 = $temp$b10;
+																				b9 = $temp$b9;
+																				b8 = $temp$b8;
+																				b7 = $temp$b7;
+																				b6 = $temp$b6;
+																				b5 = $temp$b5;
+																				b4 = $temp$b4;
+																				b3 = $temp$b3;
+																				b2 = $temp$b2;
+																				b1 = $temp$b1;
+																				continue reduceWordsHelp;
+																			} else {
+																				return deltaState;
+																			}
+																		}
+																	};
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $folkertdev$elm_sha2$Internal$SHA256$reduceMessage = function (_v0) {
+	return function (b16) {
+		return function (b15) {
+			return function (b14) {
+				return function (b13) {
+					return function (b12) {
+						return function (b11) {
+							return function (b10) {
+								return function (b9) {
+									return function (b8) {
+										return function (b7) {
+											return function (b6) {
+												return function (b5) {
+													return function (b4) {
+														return function (b3) {
+															return function (b2) {
+																return function (b1) {
+																	var initial = _v0.a;
+																	var h0 = initial.a;
+																	var h1 = initial.b;
+																	var h2 = initial.c;
+																	var h3 = initial.d;
+																	var h4 = initial.e;
+																	var h5 = initial.f;
+																	var h6 = initial.g;
+																	var h7 = initial.h;
+																	var initialDeltaState = A3(
+																		$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																		15,
+																		b16,
+																		A3(
+																			$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																			14,
+																			b15,
+																			A3(
+																				$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																				13,
+																				b14,
+																				A3(
+																					$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																					12,
+																					b13,
+																					A3(
+																						$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																						11,
+																						b12,
+																						A3(
+																							$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																							10,
+																							b11,
+																							A3(
+																								$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																								9,
+																								b10,
+																								A3(
+																									$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																									8,
+																									b9,
+																									A3(
+																										$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																										7,
+																										b8,
+																										A3(
+																											$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																											6,
+																											b7,
+																											A3(
+																												$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																												5,
+																												b6,
+																												A3(
+																													$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																													4,
+																													b5,
+																													A3(
+																														$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																														3,
+																														b4,
+																														A3(
+																															$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																															2,
+																															b3,
+																															A3(
+																																$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																																1,
+																																b2,
+																																A3(
+																																	$folkertdev$elm_sha2$Internal$SHA256$calculateDigestDeltas,
+																																	0,
+																																	b1,
+																																	$folkertdev$elm_sha2$Internal$SHA256$DeltaState(initial)))))))))))))))));
+																	var _v1 = $folkertdev$elm_sha2$Internal$SHA256$reduceWordsHelp(0)(initialDeltaState)(b1)(b2)(b3)(b4)(b5)(b6)(b7)(b8)(b9)(b10)(b11)(b12)(b13)(b14)(b15)(b16);
+																	var _v2 = _v1.a;
+																	var a = _v2.a;
+																	var b = _v2.b;
+																	var c = _v2.c;
+																	var d = _v2.d;
+																	var e = _v2.e;
+																	var f = _v2.f;
+																	var g = _v2.g;
+																	var h = _v2.h;
+																	return $folkertdev$elm_sha2$Internal$SHA256$State(
+																		A8($folkertdev$elm_sha2$Internal$SHA256$Tuple8, h0 + a, h1 + b, h2 + c, h3 + d, h4 + e, h5 + f, h6 + g, h7 + h));
+																};
+															};
+														};
+													};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $elm$bytes$Bytes$BE = {$: 'BE'};
+var $elm$bytes$Bytes$Decode$unsignedInt32 = function (endianness) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_u32(
+			_Utils_eq(endianness, $elm$bytes$Bytes$LE)));
+};
+var $folkertdev$elm_sha2$Internal$SHA256$u32 = $elm$bytes$Bytes$Decode$unsignedInt32($elm$bytes$Bytes$BE);
+var $folkertdev$elm_sha2$Internal$SHA256$reduceBytesMessage = function (state) {
+	return $folkertdev$elm_sha2$Internal$SHA256$map16(
+		$folkertdev$elm_sha2$Internal$SHA256$reduceMessage(state))($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32)($folkertdev$elm_sha2$Internal$SHA256$u32);
+};
+var $folkertdev$elm_sha2$Internal$SHA256$hashChunks = F2(
+	function (message, state) {
+		var numberOfChunks = ($elm$bytes$Bytes$width(message) / 64) | 0;
+		var hashState = A3($folkertdev$elm_sha2$Internal$SHA256$iterate, numberOfChunks, $folkertdev$elm_sha2$Internal$SHA256$reduceBytesMessage, state);
+		var _v0 = A2($elm$bytes$Bytes$Decode$decode, hashState, message);
+		if (_v0.$ === 'Just') {
+			var newState = _v0.a;
+			return newState;
+		} else {
+			return state;
+		}
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$maxSize = 2048 * 64;
+var $elm$bytes$Bytes$Encode$Bytes = function (a) {
+	return {$: 'Bytes', a: a};
+};
+var $elm$bytes$Bytes$Encode$bytes = $elm$bytes$Bytes$Encode$Bytes;
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$bytes$Bytes$Encode$U32 = F2(
+	function (a, b) {
+		return {$: 'U32', a: a, b: b};
+	});
+var $elm$bytes$Bytes$Encode$unsignedInt32 = $elm$bytes$Bytes$Encode$U32;
+var $folkertdev$elm_sha2$Internal$SHA256$padBuffer = F2(
+	function (byteCount, bytes) {
+		var finalBlockSize = byteCount & 63;
+		var paddingSize = (finalBlockSize < 56) ? ((55 - finalBlockSize) + 4) : ((119 - finalBlockSize) + 4);
+		var message = $elm$bytes$Bytes$Encode$encode(
+			$elm$bytes$Bytes$Encode$sequence(
+				_List_fromArray(
+					[
+						$elm$bytes$Bytes$Encode$bytes(bytes),
+						$elm$bytes$Bytes$Encode$unsignedInt8(128),
+						$elm$bytes$Bytes$Encode$sequence(
+						A2(
+							$elm$core$List$repeat,
+							paddingSize,
+							$elm$bytes$Bytes$Encode$unsignedInt8(0))),
+						A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, byteCount << 3)
+					])));
+		return message;
+	});
+var $elm$bytes$Bytes$Decode$bytes = function (n) {
+	return $elm$bytes$Bytes$Decode$Decoder(
+		_Bytes_read_bytes(n));
+};
+var $elm$bytes$Bytes$Decode$map2 = F3(
+	function (func, _v0, _v1) {
+		var decodeA = _v0.a;
+		var decodeB = _v1.a;
+		return $elm$bytes$Bytes$Decode$Decoder(
+			F2(
+				function (bites, offset) {
+					var _v2 = A2(decodeA, bites, offset);
+					var aOffset = _v2.a;
+					var a = _v2.b;
+					var _v3 = A2(decodeB, bites, aOffset);
+					var bOffset = _v3.a;
+					var b = _v3.b;
+					return _Utils_Tuple2(
+						bOffset,
+						A2(func, a, b));
+				}));
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$splitBytes = F2(
+	function (n, buffer) {
+		var decoder = A3(
+			$elm$bytes$Bytes$Decode$map2,
+			$elm$core$Tuple$pair,
+			$elm$bytes$Bytes$Decode$bytes(n),
+			$elm$bytes$Bytes$Decode$bytes(
+				$elm$bytes$Bytes$width(buffer) - n));
+		var _v0 = A2($elm$bytes$Bytes$Decode$decode, decoder, buffer);
+		if (_v0.$ === 'Just') {
+			var v = _v0.a;
+			return v;
+		} else {
+			return _Utils_Tuple2(
+				buffer,
+				$elm$bytes$Bytes$Encode$encode(
+					$elm$bytes$Bytes$Encode$sequence(_List_Nil)));
+		}
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$hashBytesHelp = F4(
+	function (fullSize, isLast, bytes, state) {
+		hashBytesHelp:
+		while (true) {
+			if (_Utils_cmp(
+				$elm$bytes$Bytes$width(bytes),
+				$folkertdev$elm_sha2$Internal$SHA256$maxSize) > 0) {
+				var _v0 = A2($folkertdev$elm_sha2$Internal$SHA256$splitBytes, $folkertdev$elm_sha2$Internal$SHA256$maxSize, bytes);
+				var first = _v0.a;
+				var rest = _v0.b;
+				var $temp$fullSize = fullSize,
+					$temp$isLast = true,
+					$temp$bytes = rest,
+					$temp$state = A4($folkertdev$elm_sha2$Internal$SHA256$hashBytesHelp, fullSize, false, first, state);
+				fullSize = $temp$fullSize;
+				isLast = $temp$isLast;
+				bytes = $temp$bytes;
+				state = $temp$state;
+				continue hashBytesHelp;
+			} else {
+				if (isLast) {
+					return A2(
+						$folkertdev$elm_sha2$Internal$SHA256$hashChunks,
+						A2($folkertdev$elm_sha2$Internal$SHA256$padBuffer, fullSize, bytes),
+						state);
+				} else {
+					return A2($folkertdev$elm_sha2$Internal$SHA256$hashChunks, bytes, state);
+				}
+			}
+		}
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$hashBytes = F2(
+	function (state, bytes) {
+		var _v0 = A4(
+			$folkertdev$elm_sha2$Internal$SHA256$hashBytesHelp,
+			$elm$bytes$Bytes$width(bytes),
+			true,
+			bytes,
+			state);
+		var _v1 = _v0.a;
+		var a = _v1.a;
+		var b = _v1.b;
+		var c = _v1.c;
+		var d = _v1.d;
+		var e = _v1.e;
+		var f = _v1.f;
+		var g = _v1.g;
+		var h = _v1.h;
+		return $folkertdev$elm_sha2$Internal$SHA256$Digest(
+			A8($folkertdev$elm_sha2$Internal$SHA256$Tuple8, a >>> 0, b >>> 0, c >>> 0, d >>> 0, e >>> 0, f >>> 0, g >>> 0, h >>> 0));
+	});
+var $folkertdev$elm_sha2$Internal$SHA256$fromString = function (state) {
+	return A2(
+		$elm$core$Basics$composeL,
+		A2(
+			$elm$core$Basics$composeL,
+			$folkertdev$elm_sha2$Internal$SHA256$hashBytes(state),
+			$elm$bytes$Bytes$Encode$encode),
+		$elm$bytes$Bytes$Encode$string);
+};
+var $folkertdev$elm_sha2$SHA256$initialState = $folkertdev$elm_sha2$Internal$SHA256$State(
+	A8($folkertdev$elm_sha2$Internal$SHA256$Tuple8, 1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225));
+var $folkertdev$elm_sha2$SHA256$fromString = $folkertdev$elm_sha2$Internal$SHA256$fromString($folkertdev$elm_sha2$SHA256$initialState);
+var $folkertdev$elm_sha2$SHA256$toEncoder = function (_v0) {
+	var _v1 = _v0.a;
+	var a = _v1.a;
+	var b = _v1.b;
+	var c = _v1.c;
+	var d = _v1.d;
+	var e = _v1.e;
+	var f = _v1.f;
+	var g = _v1.g;
+	var h = _v1.h;
+	return $elm$bytes$Bytes$Encode$sequence(
+		_List_fromArray(
+			[
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, a),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, b),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, c),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, d),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, e),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, f),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, g),
+				A2($elm$bytes$Bytes$Encode$unsignedInt32, $elm$bytes$Bytes$BE, h)
+			]));
+};
+var $folkertdev$elm_sha2$SHA256$toBytes = A2($elm$core$Basics$composeL, $elm$bytes$Bytes$Encode$encode, $folkertdev$elm_sha2$SHA256$toEncoder);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$mkCodeChallenge = A2(
+	$elm$core$Basics$composeR,
+	$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$codeVerifierToString,
+	A2(
+		$elm$core$Basics$composeR,
+		$folkertdev$elm_sha2$SHA256$fromString,
+		A2(
+			$elm$core$Basics$composeR,
+			$folkertdev$elm_sha2$SHA256$toBytes,
+			A2($elm$core$Basics$composeR, $chelovek0v$bbase64$Base64$Encode$bytes, $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$CodeChallenge))));
+var $author$project$Myride$gotRandomBytes = F2(
+	function (model, bytes) {
+		var _v0 = $author$project$Myride$convertBytes(bytes);
+		if (_v0.$ === 'Nothing') {
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{
+						flow: $author$project$Myride$Errored($author$project$Myride$ErrFailedToConvertBytes)
+					}),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			var state = _v0.a.state;
+			var codeVerifier = _v0.a.codeVerifier;
+			var authorization = {
+				clientId: $author$project$Myride$configuration.clientId,
+				codeChallenge: $truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$mkCodeChallenge(codeVerifier),
+				redirectUri: model.redirectUri,
+				scope: $author$project$Myride$configuration.scope,
+				state: $elm$core$Maybe$Just(state),
+				url: $author$project$Myride$configuration.authorizationEndpoint
+			};
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{flow: $author$project$Myride$Idle}),
+				$elm$browser$Browser$Navigation$load(
+					$elm$url$Url$toString(
+						$truqu$elm_oauth2$OAuth$AuthorizationCode$PKCE$makeAuthorizationUrl(authorization))));
+		}
+	});
+var $author$project$Myride$Done = function (a) {
 	return {$: 'Done', a: a};
 };
-var $author$project$Main$ErrHTTPGetUserInfo = {$: 'ErrHTTPGetUserInfo'};
-var $author$project$Main$gotUserInfo = F2(
+var $author$project$Myride$ErrHTTPGetUserInfo = {$: 'ErrHTTPGetUserInfo'};
+var $author$project$Myride$gotUserInfo = F2(
 	function (model, userInfoResponse) {
 		if (userInfoResponse.$ === 'Err') {
 			return _Utils_Tuple2(
 				_Utils_update(
 					model,
 					{
-						flow: $author$project$Main$Errored($author$project$Main$ErrHTTPGetUserInfo)
+						flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetUserInfo)
 					}),
 				$elm$core$Platform$Cmd$none);
 		} else {
@@ -8011,32 +8967,32 @@ var $author$project$Main$gotUserInfo = F2(
 				_Utils_update(
 					model,
 					{
-						flow: $author$project$Main$Done(userInfo)
+						flow: $author$project$Myride$Done(userInfo)
 					}),
 				$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Main$noOp = function (model) {
+var $author$project$Myride$noOp = function (model) {
 	return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 };
 var $elm$json$Json$Encode$int = _Json_wrap;
-var $author$project$Main$genRandomBytes = _Platform_outgoingPort('genRandomBytes', $elm$json$Json$Encode$int);
-var $author$project$Main$signInRequested = function (model) {
+var $author$project$Myride$genRandomBytes = _Platform_outgoingPort('genRandomBytes', $elm$json$Json$Encode$int);
+var $author$project$Myride$signInRequested = function (model) {
 	return _Utils_Tuple2(
 		_Utils_update(
 			model,
-			{flow: $author$project$Main$Idle}),
-		$author$project$Main$genRandomBytes(16));
+			{flow: $author$project$Myride$Idle}),
+		$author$project$Myride$genRandomBytes($author$project$Myride$cSTATE_SIZE + $author$project$Myride$cCODE_VERIFIER_SIZE));
 };
-var $author$project$Main$signOutRequested = function (model) {
+var $author$project$Myride$signOutRequested = function (model) {
 	return _Utils_Tuple2(
 		_Utils_update(
 			model,
-			{flow: $author$project$Main$Idle}),
+			{flow: $author$project$Myride$Idle}),
 		$elm$browser$Browser$Navigation$load(
 			$elm$url$Url$toString(model.redirectUri)));
 };
-var $author$project$Main$GotUserInfo = function (a) {
+var $author$project$Myride$GotUserInfo = function (a) {
 	return {$: 'GotUserInfo', a: a};
 };
 var $elm$http$Http$emptyBody = _Http_emptyBody;
@@ -8051,14 +9007,14 @@ var $truqu$elm_oauth2$OAuth$useToken = function (token) {
 			'Authorization',
 			$truqu$elm_oauth2$OAuth$tokenToString(token)));
 };
-var $author$project$Main$getUserInfo = F2(
+var $author$project$Myride$getUserInfo = F2(
 	function (_v0, token) {
 		var userInfoDecoder = _v0.userInfoDecoder;
 		var userInfoEndpoint = _v0.userInfoEndpoint;
 		return $elm$http$Http$request(
 			{
 				body: $elm$http$Http$emptyBody,
-				expect: A2($elm$http$Http$expectJson, $author$project$Main$GotUserInfo, userInfoDecoder),
+				expect: A2($elm$http$Http$expectJson, $author$project$Myride$GotUserInfo, userInfoDecoder),
 				headers: A2($truqu$elm_oauth2$OAuth$useToken, token, _List_Nil),
 				method: 'GET',
 				timeout: $elm$core$Maybe$Nothing,
@@ -8066,17 +9022,17 @@ var $author$project$Main$getUserInfo = F2(
 				url: $elm$url$Url$toString(userInfoEndpoint)
 			});
 	});
-var $author$project$Main$userInfoRequested = F2(
+var $author$project$Myride$userInfoRequested = F2(
 	function (model, token) {
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
 				{
-					flow: $author$project$Main$Authenticated(token)
+					flow: $author$project$Myride$Authenticated(token)
 				}),
-			A2($author$project$Main$getUserInfo, $author$project$Main$configuration, token));
+			A2($author$project$Myride$getUserInfo, $author$project$Myride$configuration, token));
 	});
-var $author$project$Main$update = F2(
+var $author$project$Myride$update = F2(
 	function (msg, model) {
 		var _v0 = _Utils_Tuple2(model.flow, msg);
 		_v0$7:
@@ -8087,23 +9043,26 @@ var $author$project$Main$update = F2(
 						case 'SignInRequested':
 							var _v1 = _v0.a;
 							var _v2 = _v0.b;
-							return $author$project$Main$signInRequested(model);
+							return $author$project$Myride$signInRequested(model);
 						case 'GotRandomBytes':
 							var _v3 = _v0.a;
 							var bytes = _v0.b.a;
-							return A2($author$project$Main$gotRandomBytes, model, bytes);
+							return A2($author$project$Myride$gotRandomBytes, model, bytes);
 						default:
 							break _v0$7;
 					}
 				case 'Authorized':
 					switch (_v0.b.$) {
 						case 'AccessTokenRequested':
-							var code = _v0.a.a;
-							var _v4 = _v0.b;
-							return A2($author$project$Main$accessTokenRequested, model, code);
+							var _v4 = _v0.a;
+							var code = _v4.a;
+							var codeVerifier = _v4.b;
+							var _v5 = _v0.b;
+							return A3($author$project$Myride$accessTokenRequested, model, code, codeVerifier);
 						case 'GotAccessToken':
+							var _v6 = _v0.a;
 							var authenticationResponse = _v0.b.a;
-							return A2($author$project$Main$gotAccessToken, model, authenticationResponse);
+							return A2($author$project$Myride$gotAccessToken, model, authenticationResponse);
 						default:
 							break _v0$7;
 					}
@@ -8111,18 +9070,18 @@ var $author$project$Main$update = F2(
 					switch (_v0.b.$) {
 						case 'UserInfoRequested':
 							var token = _v0.a.a;
-							var _v5 = _v0.b;
-							return A2($author$project$Main$userInfoRequested, model, token);
+							var _v7 = _v0.b;
+							return A2($author$project$Myride$userInfoRequested, model, token);
 						case 'GotUserInfo':
 							var userInfoResponse = _v0.b.a;
-							return A2($author$project$Main$gotUserInfo, model, userInfoResponse);
+							return A2($author$project$Myride$gotUserInfo, model, userInfoResponse);
 						default:
 							break _v0$7;
 					}
 				case 'Done':
 					if (_v0.b.$ === 'SignOutRequested') {
-						var _v6 = _v0.b;
-						return $author$project$Main$signOutRequested(model);
+						var _v8 = _v0.b;
+						return $author$project$Myride$signOutRequested(model);
 					} else {
 						break _v0$7;
 					}
@@ -8130,13 +9089,13 @@ var $author$project$Main$update = F2(
 					break _v0$7;
 			}
 		}
-		return $author$project$Main$noOp(model);
+		return $author$project$Myride$noOp(model);
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$Main$viewAuthenticated = _List_fromArray(
+var $author$project$Myride$viewAuthenticated = _List_fromArray(
 	[
 		A2(
 		$elm$html$Html$span,
@@ -8148,7 +9107,7 @@ var $author$project$Main$viewAuthenticated = _List_fromArray(
 	]);
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Main$viewStep = F2(
+var $author$project$Myride$viewStep = F2(
 	function (isActive, _v0) {
 		var step = _v0.a;
 		var position = _v0.b;
@@ -8174,23 +9133,23 @@ var $author$project$Main$viewStep = F2(
 						]))
 				]));
 	});
-var $author$project$Main$viewAuthenticationStep = function (isActive) {
+var $author$project$Myride$viewAuthenticationStep = function (isActive) {
 	return A2(
-		$author$project$Main$viewStep,
+		$author$project$Myride$viewStep,
 		isActive,
 		_Utils_Tuple2(
 			'Authentication',
 			A2($elm$html$Html$Attributes$style, 'left', '-125%')));
 };
-var $author$project$Main$viewAuthorizationStep = function (isActive) {
+var $author$project$Myride$viewAuthorizationStep = function (isActive) {
 	return A2(
-		$author$project$Main$viewStep,
+		$author$project$Myride$viewStep,
 		isActive,
 		_Utils_Tuple2(
 			'Authorization',
 			A2($elm$html$Html$Attributes$style, 'left', '-110%')));
 };
-var $author$project$Main$viewAuthorized = _List_fromArray(
+var $author$project$Myride$viewAuthorized = _List_fromArray(
 	[
 		A2(
 		$elm$html$Html$span,
@@ -8221,14 +9180,7 @@ var $truqu$elm_oauth2$OAuth$errorCodeToString = function (err) {
 			return str;
 	}
 };
-var $elm$core$String$replace = F3(
-	function (before, after, string) {
-		return A2(
-			$elm$core$String$join,
-			after,
-			A2($elm$core$String$split, before, string));
-	});
-var $author$project$Main$oauthErrorToString = function (_v0) {
+var $author$project$Myride$oauthErrorToString = function (_v0) {
 	var error = _v0.error;
 	var errorDescription = _v0.errorDescription;
 	var desc = A3(
@@ -8238,19 +9190,21 @@ var $author$project$Main$oauthErrorToString = function (_v0) {
 		A2($elm$core$Maybe$withDefault, '', errorDescription));
 	return $truqu$elm_oauth2$OAuth$errorCodeToString(error) + (': ' + desc);
 };
-var $author$project$Main$viewError = function (e) {
+var $author$project$Myride$viewError = function (e) {
 	return $elm$html$Html$text(
 		function () {
 			switch (e.$) {
 				case 'ErrStateMismatch':
 					return '\'state\' doesn\'t match, the request has likely been forged by an adversary!';
+				case 'ErrFailedToConvertBytes':
+					return 'Unable to convert bytes to \'state\' and \'codeVerifier\', this is likely not your fault...';
 				case 'ErrAuthorization':
 					var error = e.a;
-					return $author$project$Main$oauthErrorToString(
+					return $author$project$Myride$oauthErrorToString(
 						{error: error.error, errorDescription: error.errorDescription});
 				case 'ErrAuthentication':
 					var error = e.a;
-					return $author$project$Main$oauthErrorToString(
+					return $author$project$Myride$oauthErrorToString(
 						{error: error.error, errorDescription: error.errorDescription});
 				case 'ErrHTTPGetAccessToken':
 					return 'Unable to retrieve token: HTTP request failed. CORS is likely disabled on the authorization server.';
@@ -8259,7 +9213,7 @@ var $author$project$Main$viewError = function (e) {
 			}
 		}());
 };
-var $author$project$Main$viewErrored = function (error) {
+var $author$project$Myride$viewErrored = function (error) {
 	return _List_fromArray(
 		[
 			A2(
@@ -8270,11 +9224,11 @@ var $author$project$Main$viewErrored = function (error) {
 				]),
 			_List_fromArray(
 				[
-					$author$project$Main$viewError(error)
+					$author$project$Myride$viewError(error)
 				]))
 		]);
 };
-var $author$project$Main$viewErroredStep = A2(
+var $author$project$Myride$viewErroredStep = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
 		[
@@ -8294,15 +9248,15 @@ var $author$project$Main$viewErroredStep = A2(
 					$elm$html$Html$text('Errored')
 				]))
 		]));
-var $author$project$Main$viewGetUserInfoStep = function (isActive) {
+var $author$project$Myride$viewGetUserInfoStep = function (isActive) {
 	return A2(
-		$author$project$Main$viewStep,
+		$author$project$Myride$viewStep,
 		isActive,
 		_Utils_Tuple2(
 			'Get User Info',
 			A2($elm$html$Html$Attributes$style, 'left', '-135%')));
 };
-var $author$project$Main$SignInRequested = {$: 'SignInRequested'};
+var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -8321,7 +9275,7 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Main$viewIdle = function (_v0) {
+var $author$project$Myride$viewIdle = function (_v0) {
 	var btnClass = _v0.btnClass;
 	return _List_fromArray(
 		[
@@ -8329,16 +9283,16 @@ var $author$project$Main$viewIdle = function (_v0) {
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Events$onClick($author$project$Main$SignInRequested),
+					$elm$html$Html$Events$onClick($author$project$Myride$SignInRequested),
 					btnClass
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('Sign in')
+					$elm$html$Html$text('Try Sign in')
 				]))
 		]);
 };
-var $author$project$Main$viewStepSeparator = function (isActive) {
+var $author$project$Myride$viewStepSeparator = function (isActive) {
 	var stepClass = A2(
 		$elm$core$List$cons,
 		$elm$html$Html$Attributes$class('step-separator'),
@@ -8348,13 +9302,20 @@ var $author$project$Main$viewStepSeparator = function (isActive) {
 			]) : _List_Nil);
 	return A2($elm$html$Html$span, stepClass, _List_Nil);
 };
-var $author$project$Main$SignOutRequested = {$: 'SignOutRequested'};
+var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
+var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$p = _VirtualDom_node('p');
-var $author$project$Main$viewUserInfo = F2(
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $author$project$Myride$viewUserInfo = F2(
 	function (_v0, _v1) {
 		var btnClass = _v0.btnClass;
-		var firstname = _v1.firstname;
-		var lastname = _v1.lastname;
+		var name = _v1.name;
+		var picture = _v1.picture;
 		return _List_fromArray(
 			[
 				A2(
@@ -8367,11 +9328,19 @@ var $author$project$Main$viewUserInfo = F2(
 				_List_fromArray(
 					[
 						A2(
+						$elm$html$Html$img,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('avatar'),
+								$elm$html$Html$Attributes$src(picture)
+							]),
+						_List_Nil),
+						A2(
 						$elm$html$Html$p,
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Namn:' + (firstname + (' ' + lastname)))
+								$elm$html$Html$text(name)
 							])),
 						A2(
 						$elm$html$Html$div,
@@ -8382,7 +9351,7 @@ var $author$project$Main$viewUserInfo = F2(
 								$elm$html$Html$button,
 								_List_fromArray(
 									[
-										$elm$html$Html$Events$onClick($author$project$Main$SignOutRequested),
+										$elm$html$Html$Events$onClick($author$project$Myride$SignOutRequested),
 										btnClass
 									]),
 								_List_fromArray(
@@ -8393,7 +9362,7 @@ var $author$project$Main$viewUserInfo = F2(
 					]))
 			]);
 	});
-var $author$project$Main$viewBody = F2(
+var $author$project$Myride$viewBody = F2(
 	function (config, model) {
 		return _List_fromArray(
 			[
@@ -8419,13 +9388,13 @@ var $author$project$Main$viewBody = F2(
 										]),
 									_List_fromArray(
 										[
-											$author$project$Main$viewAuthorizationStep(false),
-											$author$project$Main$viewStepSeparator(false),
-											$author$project$Main$viewAuthenticationStep(false),
-											$author$project$Main$viewStepSeparator(false),
-											$author$project$Main$viewGetUserInfoStep(false)
+											$author$project$Myride$viewAuthorizationStep(false),
+											$author$project$Myride$viewStepSeparator(false),
+											$author$project$Myride$viewAuthenticationStep(false),
+											$author$project$Myride$viewStepSeparator(false),
+											$author$project$Myride$viewGetUserInfoStep(false)
 										])),
-								$author$project$Main$viewIdle(config));
+								$author$project$Myride$viewIdle(config));
 						case 'Authorized':
 							return A2(
 								$elm$core$List$cons,
@@ -8437,13 +9406,13 @@ var $author$project$Main$viewBody = F2(
 										]),
 									_List_fromArray(
 										[
-											$author$project$Main$viewAuthorizationStep(true),
-											$author$project$Main$viewStepSeparator(true),
-											$author$project$Main$viewAuthenticationStep(false),
-											$author$project$Main$viewStepSeparator(false),
-											$author$project$Main$viewGetUserInfoStep(false)
+											$author$project$Myride$viewAuthorizationStep(true),
+											$author$project$Myride$viewStepSeparator(true),
+											$author$project$Myride$viewAuthenticationStep(false),
+											$author$project$Myride$viewStepSeparator(false),
+											$author$project$Myride$viewGetUserInfoStep(false)
 										])),
-								$author$project$Main$viewAuthorized);
+								$author$project$Myride$viewAuthorized);
 						case 'Authenticated':
 							return A2(
 								$elm$core$List$cons,
@@ -8455,13 +9424,13 @@ var $author$project$Main$viewBody = F2(
 										]),
 									_List_fromArray(
 										[
-											$author$project$Main$viewAuthorizationStep(true),
-											$author$project$Main$viewStepSeparator(true),
-											$author$project$Main$viewAuthenticationStep(true),
-											$author$project$Main$viewStepSeparator(true),
-											$author$project$Main$viewGetUserInfoStep(false)
+											$author$project$Myride$viewAuthorizationStep(true),
+											$author$project$Myride$viewStepSeparator(true),
+											$author$project$Myride$viewAuthenticationStep(true),
+											$author$project$Myride$viewStepSeparator(true),
+											$author$project$Myride$viewGetUserInfoStep(false)
 										])),
-								$author$project$Main$viewAuthenticated);
+								$author$project$Myride$viewAuthenticated);
 						case 'Done':
 							var userInfo = _v0.a;
 							return A2(
@@ -8474,13 +9443,13 @@ var $author$project$Main$viewBody = F2(
 										]),
 									_List_fromArray(
 										[
-											$author$project$Main$viewAuthorizationStep(true),
-											$author$project$Main$viewStepSeparator(true),
-											$author$project$Main$viewAuthenticationStep(true),
-											$author$project$Main$viewStepSeparator(true),
-											$author$project$Main$viewGetUserInfoStep(true)
+											$author$project$Myride$viewAuthorizationStep(true),
+											$author$project$Myride$viewStepSeparator(true),
+											$author$project$Myride$viewAuthenticationStep(true),
+											$author$project$Myride$viewStepSeparator(true),
+											$author$project$Myride$viewGetUserInfoStep(true)
 										])),
-								A2($author$project$Main$viewUserInfo, config, userInfo));
+								A2($author$project$Myride$viewUserInfo, config, userInfo));
 						default:
 							var err = _v0.a;
 							return A2(
@@ -8492,50 +9461,38 @@ var $author$project$Main$viewBody = F2(
 											$elm$html$Html$Attributes$class('flex')
 										]),
 									_List_fromArray(
-										[
-											$author$project$Main$viewErroredStep,
-											$elm$html$Html$text(
-											'RedirUri ' + (model.redirectUri.host + (model.redirectUri.path + function () {
-												var _v1 = model.redirectUri.query;
-												if (_v1.$ === 'Nothing') {
-													return 'Nothing';
-												} else {
-													var q = _v1.a;
-													return q;
-												}
-											}())))
-										])),
-								$author$project$Main$viewErrored(err));
+										[$author$project$Myride$viewErroredStep])),
+								$author$project$Myride$viewErrored(err));
 					}
 				}())
 			]);
 	});
-var $author$project$Main$view = F2(
+var $author$project$Myride$view = F2(
 	function (config, model) {
 		var title = config.title;
 		return {
-			body: A2($author$project$Main$viewBody, config, model),
+			body: A2($author$project$Myride$viewBody, config, model),
 			title: title
 		};
 	});
-var $author$project$Main$main = $elm$browser$Browser$application(
+var $author$project$Myride$main = $elm$browser$Browser$application(
 	{
 		init: A2(
 			$elm$core$Basics$composeR,
-			$elm$core$Maybe$map($author$project$Main$convertBytes),
-			$author$project$Main$init),
-		onUrlChange: $elm$core$Basics$always($author$project$Main$NoOp),
-		onUrlRequest: $elm$core$Basics$always($author$project$Main$NoOp),
+			$elm$core$Maybe$andThen($author$project$Myride$convertBytes),
+			$author$project$Myride$init),
+		onUrlChange: $elm$core$Basics$always($author$project$Myride$NoOp),
+		onUrlRequest: $elm$core$Basics$always($author$project$Myride$NoOp),
 		subscriptions: $elm$core$Basics$always(
-			$author$project$Main$randomBytes($author$project$Main$GotRandomBytes)),
-		update: $author$project$Main$update,
-		view: $author$project$Main$view(
+			$author$project$Myride$randomBytes($author$project$Myride$GotRandomBytes)),
+		update: $author$project$Myride$update,
+		view: $author$project$Myride$view(
 			{
 				btnClass: $elm$html$Html$Attributes$class('btn-auth0'),
-				title: 'Auth0 - Flow: Authorization Code'
+				title: 'Auth0 - Flow: Authorization Code w/ PKCE'
 			})
 	});
-_Platform_export({'Main':{'init':$author$project$Main$main(
+_Platform_export({'Myride':{'init':$author$project$Myride$main(
 	$elm$json$Json$Decode$oneOf(
 		_List_fromArray(
 			[
