@@ -8018,7 +8018,10 @@ var $author$project$Myride$getAccessToken = F4(
 				{
 					code: code,
 					codeVerifier: codeVerifier,
-					credentials: {clientId: clientId, secret: $elm$core$Maybe$Nothing},
+					credentials: {
+						clientId: clientId,
+						secret: $elm$core$Maybe$Just('bee8686fc893568412f98144895793c28ae48cdc')
+					},
 					redirectUri: redirectUri,
 					url: tokenEndpoint
 				}));
