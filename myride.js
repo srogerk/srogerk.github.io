@@ -7153,25 +7153,26 @@ var $author$project$Myride$UserInfo = F2(
 	});
 var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: '', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Myride$ohost = 'www.strava.com';
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Myride$configuration = {
 	authorizationEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: 'elm-oauth2.eu.auth0.com', path: '/authorize'}),
-	clientId: 'AbRrXEIRBPgkDrqR4RgdXuHoAd1mDetT',
+		{host: $author$project$Myride$ohost, path: '/oauth/authorize'}),
+	clientId: '68838',
 	scope: _List_fromArray(
-		['openid', 'profile']),
+		['read']),
 	tokenEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: 'elm-oauth2.eu.auth0.com', path: '/oauth/token'}),
+		{host: $author$project$Myride$ohost, path: '/oauth/token'}),
 	userInfoDecoder: A3(
 		$elm$json$Json$Decode$map2,
 		$author$project$Myride$UserInfo,
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-		A2($elm$json$Json$Decode$field, 'picture', $elm$json$Json$Decode$string)),
+		A2($elm$json$Json$Decode$field, 'firstname', $elm$json$Json$Decode$string),
+		A2($elm$json$Json$Decode$field, 'lastname', $elm$json$Json$Decode$string)),
 	userInfoEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: 'elm-oauth2.eu.auth0.com', path: '/userinfo'})
+		{host: $author$project$Myride$ohost, path: '/athlete'})
 };
 var $author$project$Myride$GotAccessToken = function (a) {
 	return {$: 'GotAccessToken', a: a};
