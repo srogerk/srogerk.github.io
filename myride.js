@@ -7174,10 +7174,10 @@ var $author$project$Myride$configuration = {
 		$author$project$Myride$defaultHttpsUrl,
 		{host: $author$project$Myride$ohost, path: '/athlete'})
 };
+var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
 var $author$project$Myride$GotAccessToken = function (a) {
 	return {$: 'GotAccessToken', a: a};
 };
-var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
 var $truqu$elm_oauth2$Internal$AuthenticationSuccess = F4(
 	function (token, refreshToken, expiresIn, scope) {
 		return {expiresIn: expiresIn, refreshToken: refreshToken, scope: scope, token: token};
@@ -7576,7 +7576,6 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith = F5(
 						]))));
 		return A5($truqu$elm_oauth2$Internal$makeRequest, decoder, toMsg, url, headers, body);
 	});
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequest = A3($truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith, $truqu$elm_oauth2$OAuth$AuthorizationCode, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder, $elm$core$Dict$empty);
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -7745,13 +7744,20 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
+var $elm$core$Dict$singleton = F2(
+	function (key, value) {
+		return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+	});
 var $author$project$Myride$getAccessToken = F3(
 	function (_v0, redirectUri, code) {
 		var clientId = _v0.clientId;
 		var tokenEndpoint = _v0.tokenEndpoint;
 		return $elm$http$Http$request(
-			A2(
-				$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequest,
+			A5(
+				$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith,
+				$truqu$elm_oauth2$OAuth$AuthorizationCode,
+				$truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder,
+				A2($elm$core$Dict$singleton, 'client_secret', 'bee8686fc893568412f98144895793c28ae48cdc'),
 				$author$project$Myride$GotAccessToken,
 				{
 					code: code,
