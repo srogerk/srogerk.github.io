@@ -7172,7 +7172,7 @@ var $author$project$Myride$configuration = {
 		A2($elm$json$Json$Decode$field, 'lastname', $elm$json$Json$Decode$string)),
 	userInfoEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: $author$project$Myride$ohost, path: '/athlete'})
+		{host: $author$project$Myride$ohost, path: '/api/v3/athlete'})
 };
 var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
 var $author$project$Myride$GotAccessToken = function (a) {
