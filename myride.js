@@ -8101,74 +8101,31 @@ var $author$project$Myride$update = F2(
 		}
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
+var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Myride$viewAuthenticated = _List_fromArray(
-	[
-		A2(
-		$elm$html$Html$span,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text('Getting user info...')
-			]))
-	]);
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Myride$viewStep = F2(
-	function (isActive, _v0) {
-		var step = _v0.a;
-		var position = _v0.b;
-		var stepClass = A2(
-			$elm$core$List$cons,
-			$elm$html$Html$Attributes$class('step'),
-			isActive ? _List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('step-active')
-				]) : _List_Nil);
-		return A2(
-			$elm$html$Html$div,
-			stepClass,
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$span,
-					_List_fromArray(
-						[position]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(step)
-						]))
-				]));
-	});
-var $author$project$Myride$viewAuthenticationStep = function (isActive) {
-	return A2(
-		$author$project$Myride$viewStep,
-		isActive,
-		_Utils_Tuple2(
-			'Authentication',
-			A2($elm$html$Html$Attributes$style, 'left', '-125%')));
-};
-var $author$project$Myride$viewAuthorizationStep = function (isActive) {
-	return A2(
-		$author$project$Myride$viewStep,
-		isActive,
-		_Utils_Tuple2(
-			'Authorization',
-			A2($elm$html$Html$Attributes$style, 'left', '-110%')));
-};
-var $author$project$Myride$viewAuthorized = _List_fromArray(
-	[
-		A2(
-		$elm$html$Html$span,
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text('Authenticating...')
-			]))
-	]);
 var $truqu$elm_oauth2$OAuth$errorCodeToString = function (err) {
 	switch (err.$) {
 		case 'InvalidRequest':
@@ -8243,84 +8200,9 @@ var $author$project$Myride$viewErrored = function (error) {
 				]))
 		]);
 };
-var $author$project$Myride$viewErroredStep = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$class('step'),
-			$elm$html$Html$Attributes$class('step-errored')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$span,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'left', '-50%')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Errored')
-				]))
-		]));
-var $author$project$Myride$viewGetUserInfoStep = function (isActive) {
-	return A2(
-		$author$project$Myride$viewStep,
-		isActive,
-		_Utils_Tuple2(
-			'Get User Info',
-			A2($elm$html$Html$Attributes$style, 'left', '-135%')));
-};
-var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Myride$viewIdle = function (_v0) {
-	var btnClass = _v0.btnClass;
-	return _List_fromArray(
-		[
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Myride$SignInRequested),
-					btnClass
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Sign in')
-				]))
-		]);
-};
-var $author$project$Myride$viewStepSeparator = function (isActive) {
-	var stepClass = A2(
-		$elm$core$List$cons,
-		$elm$html$Html$Attributes$class('step-separator'),
-		isActive ? _List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('step-active')
-			]) : _List_Nil);
-	return A2($elm$html$Html$span, stepClass, _List_Nil);
-};
 var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$img = _VirtualDom_node('img');
-var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -8389,101 +8271,73 @@ var $author$project$Myride$viewBody = F2(
 			[
 				A2(
 				$elm$html$Html$div,
+				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('flex'),
-						$elm$html$Html$Attributes$class('flex-column'),
-						$elm$html$Html$Attributes$class('flex-space-around')
-					]),
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Strive')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('A strava wrapper visualising your ride performance')
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
 				function () {
 					var _v0 = model.flow;
 					switch (_v0.$) {
 						case 'Idle':
-							return A2(
-								$elm$core$List$cons,
-								A2(
-									$elm$html$Html$div,
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('flex')
+											$elm$html$Html$Events$onClick($author$project$Myride$SignInRequested),
+											config.btnClass
 										]),
 									_List_fromArray(
 										[
-											$author$project$Myride$viewAuthorizationStep(false),
-											$author$project$Myride$viewStepSeparator(false),
-											$author$project$Myride$viewAuthenticationStep(false),
-											$author$project$Myride$viewStepSeparator(false),
-											$author$project$Myride$viewGetUserInfoStep(false)
-										])),
-								$author$project$Myride$viewIdle(config));
+											$elm$html$Html$text('Sign in')
+										]))
+								]);
 						case 'Authorized':
-							return A2(
-								$elm$core$List$cons,
-								A2(
-									$elm$html$Html$div,
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_Nil,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('flex')
-										]),
-									_List_fromArray(
-										[
-											$author$project$Myride$viewAuthorizationStep(true),
-											$author$project$Myride$viewStepSeparator(true),
-											$author$project$Myride$viewAuthenticationStep(false),
-											$author$project$Myride$viewStepSeparator(false),
-											$author$project$Myride$viewGetUserInfoStep(false)
-										])),
-								$author$project$Myride$viewAuthorized);
+											$elm$html$Html$text('Authenticating...')
+										]))
+								]);
 						case 'Authenticated':
-							return A2(
-								$elm$core$List$cons,
-								A2(
-									$elm$html$Html$div,
+							return _List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_Nil,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('flex')
-										]),
-									_List_fromArray(
-										[
-											$author$project$Myride$viewAuthorizationStep(true),
-											$author$project$Myride$viewStepSeparator(true),
-											$author$project$Myride$viewAuthenticationStep(true),
-											$author$project$Myride$viewStepSeparator(true),
-											$author$project$Myride$viewGetUserInfoStep(false)
-										])),
-								$author$project$Myride$viewAuthenticated);
+											$elm$html$Html$text('Getting user info...')
+										]))
+								]);
 						case 'Done':
 							var userInfo = _v0.a;
-							return A2(
-								$elm$core$List$cons,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex')
-										]),
-									_List_fromArray(
-										[
-											$author$project$Myride$viewAuthorizationStep(true),
-											$author$project$Myride$viewStepSeparator(true),
-											$author$project$Myride$viewAuthenticationStep(true),
-											$author$project$Myride$viewStepSeparator(true),
-											$author$project$Myride$viewGetUserInfoStep(true)
-										])),
-								A2($author$project$Myride$viewUserInfo, config, userInfo));
+							return A2($author$project$Myride$viewUserInfo, config, userInfo);
 						default:
 							var err = _v0.a;
-							return A2(
-								$elm$core$List$cons,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex')
-										]),
-									_List_fromArray(
-										[$author$project$Myride$viewErroredStep])),
-								$author$project$Myride$viewErrored(err));
+							return $author$project$Myride$viewErrored(err);
 					}
 				}())
 			]);
