@@ -7096,7 +7096,7 @@ var $author$project$Myride$init = F3(
 		switch (_v0.$) {
 			case 'Empty':
 				return _Utils_Tuple2(
-					{activities: _List_Nil, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri},
+					{activities: _List_Nil, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing},
 					$elm$core$Platform$Cmd$none);
 			case 'Success':
 				var code = _v0.a.code;
@@ -7107,7 +7107,8 @@ var $author$project$Myride$init = F3(
 							activities: _List_Nil,
 							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
 							log: _List_Nil,
-							redirectUri: redirectUri
+							redirectUri: redirectUri,
+							userInfo: $elm$core$Maybe$Nothing
 						},
 						clearUrl);
 				} else {
@@ -7119,14 +7120,16 @@ var $author$project$Myride$init = F3(
 							activities: _List_Nil,
 							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
 							log: _List_Nil,
-							redirectUri: redirectUri
+							redirectUri: redirectUri,
+							userInfo: $elm$core$Maybe$Nothing
 						},
 						clearUrl) : _Utils_Tuple2(
 						{
 							activities: _List_Nil,
 							flow: $author$project$Myride$Authorized(code),
 							log: _List_Nil,
-							redirectUri: redirectUri
+							redirectUri: redirectUri,
+							userInfo: $elm$core$Maybe$Nothing
 						},
 						$elm$core$Platform$Cmd$batch(
 							_List_fromArray(
@@ -7143,7 +7146,8 @@ var $author$project$Myride$init = F3(
 						flow: $author$project$Myride$Errored(
 							$author$project$Myride$ErrAuthorization(error)),
 						log: _List_Nil,
-						redirectUri: redirectUri
+						redirectUri: redirectUri,
+						userInfo: $elm$core$Maybe$Nothing
 					},
 					clearUrl);
 		}
@@ -7158,34 +7162,49 @@ var $author$project$Myride$randomBytes = _Platform_incomingPort(
 var $author$project$Myride$Authenticated = function (a) {
 	return {$: 'Authenticated', a: a};
 };
-var $author$project$Myride$Done = function (a) {
-	return {$: 'Done', a: a};
-};
 var $author$project$Myride$ErrAuthentication = function (a) {
 	return {$: 'ErrAuthentication', a: a};
 };
 var $author$project$Myride$ErrHTTPGetAccessToken = {$: 'ErrHTTPGetAccessToken'};
 var $author$project$Myride$ErrHTTPGetUserInfo = {$: 'ErrHTTPGetUserInfo'};
 var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
+var $author$project$Myride$Activity = F6(
+	function (id, name, distance, movingtime, elapsedtime, startDateLocal) {
+		return {distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
+	});
 var $author$project$Myride$UserInfo = F5(
 	function (firstname, lastname, profile, city, country) {
 		return {city: city, country: country, firstname: firstname, lastname: lastname, profile: profile};
 	});
-var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: '', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
+var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: 'www.strava.com', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map5 = _Json_map5;
-var $author$project$Myride$ohost = 'www.strava.com';
+var $elm$json$Json$Decode$map6 = _Json_map6;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Myride$configuration = {
+	activityListDecoder: $elm$json$Json$Decode$list(
+		A7(
+			$elm$json$Json$Decode$map6,
+			$author$project$Myride$Activity,
+			A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float),
+			A2($elm$json$Json$Decode$field, 'movingtime', $elm$json$Json$Decode$int),
+			A2($elm$json$Json$Decode$field, 'elapsedtime', $elm$json$Json$Decode$int),
+			A2($elm$json$Json$Decode$field, 'start_date_local', $elm$json$Json$Decode$string))),
+	activityListEndpoint: _Utils_update(
+		$author$project$Myride$defaultHttpsUrl,
+		{path: '/api/v3/athlete/activities'}),
 	authorizationEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: $author$project$Myride$ohost, path: '/oauth/authorize'}),
+		{path: '/oauth/authorize'}),
 	clientId: '68838',
 	scope: _List_fromArray(
 		['read']),
 	tokenEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: $author$project$Myride$ohost, path: '/oauth/token'}),
+		{path: '/oauth/token'}),
 	userInfoDecoder: A6(
 		$elm$json$Json$Decode$map5,
 		$author$project$Myride$UserInfo,
@@ -7196,7 +7215,7 @@ var $author$project$Myride$configuration = {
 		A2($elm$json$Json$Decode$field, 'country', $elm$json$Json$Decode$string)),
 	userInfoEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
-		{host: $author$project$Myride$ohost, path: '/api/v3/athlete'})
+		{path: '/api/v3/athlete'})
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $truqu$elm_oauth2$Internal$AuthenticationError = F3(
@@ -7815,8 +7834,8 @@ var $author$project$Myride$getAccessToken = F3(
 					url: tokenEndpoint
 				}));
 	});
-var $author$project$Myride$GotUserInfo = function (a) {
-	return {$: 'GotUserInfo', a: a};
+var $author$project$Myride$GotActivityList = function (a) {
+	return {$: 'GotActivityList', a: a};
 };
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $truqu$elm_oauth2$OAuth$tokenToString = function (_v0) {
@@ -7829,6 +7848,24 @@ var $truqu$elm_oauth2$OAuth$useToken = function (token) {
 			$elm$http$Http$header,
 			'Authorization',
 			$truqu$elm_oauth2$OAuth$tokenToString(token)));
+};
+var $author$project$Myride$getActivityList = F2(
+	function (_v0, token) {
+		var activityListDecoder = _v0.activityListDecoder;
+		var activityListEndpoint = _v0.activityListEndpoint;
+		return $elm$http$Http$request(
+			{
+				body: $elm$http$Http$emptyBody,
+				expect: A2($elm$http$Http$expectJson, $author$project$Myride$GotActivityList, activityListDecoder),
+				headers: A2($truqu$elm_oauth2$OAuth$useToken, token, _List_Nil),
+				method: 'GET',
+				timeout: $elm$core$Maybe$Nothing,
+				tracker: $elm$core$Maybe$Nothing,
+				url: $elm$url$Url$toString(activityListEndpoint)
+			});
+	});
+var $author$project$Myride$GotUserInfo = function (a) {
+	return {$: 'GotUserInfo', a: a};
 };
 var $author$project$Myride$getUserInfo = F2(
 	function (_v0, token) {
@@ -7959,7 +7996,7 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl = A2($truqu$e
 var $author$project$Myride$update = F2(
 	function (msg, model) {
 		var _v0 = _Utils_Tuple2(model.flow, msg);
-		_v0$7:
+		_v0$8:
 		while (true) {
 			switch (_v0.a.$) {
 				case 'Idle':
@@ -7992,7 +8029,7 @@ var $author$project$Myride$update = F2(
 									$elm$url$Url$toString(
 										$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl(authorization))));
 						default:
-							break _v0$7;
+							break _v0$8;
 					}
 				case 'Authorized':
 					switch (_v0.b.$) {
@@ -8046,7 +8083,7 @@ var $author$project$Myride$update = F2(
 									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$UserInfoRequested));
 							}
 						default:
-							break _v0$7;
+							break _v0$8;
 					}
 				case 'Authenticated':
 					switch (_v0.b.$) {
@@ -8060,7 +8097,26 @@ var $author$project$Myride$update = F2(
 										flow: $author$project$Myride$Authenticated(token)
 									}),
 								A2($author$project$Myride$getUserInfo, $author$project$Myride$configuration, token));
+						case 'GotActivityList':
+							var activityListResponse = _v0.b.a;
+							if (activityListResponse.$ === 'Err') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetUserInfo)
+										}),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								var activityList = activityListResponse.a;
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{activities: activityList}),
+									$elm$core$Platform$Cmd$none);
+							}
 						case 'GotUserInfo':
+							var token = _v0.a.a;
 							var userInfoResponse = _v0.b.a;
 							if (userInfoResponse.$ === 'Err') {
 								return _Utils_Tuple2(
@@ -8071,32 +8127,28 @@ var $author$project$Myride$update = F2(
 										}),
 									$elm$core$Platform$Cmd$none);
 							} else {
-								var userInfo = userInfoResponse.a;
+								var userInfo_ = userInfoResponse.a;
 								return _Utils_Tuple2(
 									_Utils_update(
 										model,
 										{
-											flow: $author$project$Myride$Done(userInfo)
+											userInfo: $elm$core$Maybe$Just(userInfo_)
 										}),
-									$elm$core$Platform$Cmd$none);
+									A2($author$project$Myride$getActivityList, $author$project$Myride$configuration, token));
 							}
+						case 'SignOutRequested':
+							var _v11 = _v0.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{flow: $author$project$Myride$Idle}),
+								$elm$browser$Browser$Navigation$load(
+									$elm$url$Url$toString(model.redirectUri)));
 						default:
-							break _v0$7;
-					}
-				case 'Done':
-					if (_v0.b.$ === 'SignOutRequested') {
-						var _v10 = _v0.b;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{flow: $author$project$Myride$Idle}),
-							$elm$browser$Browser$Navigation$load(
-								$elm$url$Url$toString(model.redirectUri)));
-					} else {
-						break _v0$7;
+							break _v0$8;
 					}
 				default:
-					break _v0$7;
+					break _v0$8;
 			}
 		}
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -8203,14 +8255,16 @@ var $author$project$Myride$viewErrored = function (error) {
 var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $author$project$Myride$viewUserInfo = F2(
-	function (_v0, ui) {
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Myride$viewUserInfo = F3(
+	function (_v0, ui, act) {
 		var btnClass = _v0.btnClass;
 		return _List_fromArray(
 			[
@@ -8261,7 +8315,25 @@ var $author$project$Myride$viewUserInfo = F2(
 									[
 										$elm$html$Html$text('Sign out')
 									]))
-							]))
+							])),
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						A2(
+							$elm$core$List$cons,
+							$elm$html$Html$text('Activities'),
+							A2(
+								$elm$core$List$map,
+								function (a) {
+									return A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(a.name)
+											]));
+								},
+								act)))
 					]))
 			]);
 	});
@@ -8322,19 +8394,16 @@ var $author$project$Myride$viewBody = F2(
 										]))
 								]);
 						case 'Authenticated':
-							return _List_fromArray(
-								[
-									A2(
-									$elm$html$Html$span,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text('Getting user info...')
-										]))
-								]);
-						case 'Done':
-							var userInfo = _v0.a;
-							return A2($author$project$Myride$viewUserInfo, config, userInfo);
+							var _v1 = model.userInfo;
+							if (_v1.$ === 'Nothing') {
+								return _List_fromArray(
+									[
+										$elm$html$Html$text('No user info (not logged in)')
+									]);
+							} else {
+								var userInfo_ = _v1.a;
+								return A3($author$project$Myride$viewUserInfo, config, userInfo_, model.activities);
+							}
 						default:
 							var err = _v0.a;
 							return $author$project$Myride$viewErrored(err);
