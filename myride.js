@@ -7201,7 +7201,7 @@ var $author$project$Myride$configuration = {
 		{path: '/oauth/authorize'}),
 	clientId: '68838',
 	scope: _List_fromArray(
-		['read']),
+		['read', 'activity:read']),
 	tokenEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/oauth/token'}),
