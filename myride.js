@@ -8128,7 +8128,6 @@ var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -8150,7 +8149,53 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$Myride$viewActivities = function (activities) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Activities')
+					])),
+				A2(
+				$elm$html$Html$ul,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (a) {
+						return A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($elm$core$String$left, 10, a.startDateLocal))
+										])),
+									A2(
+									$elm$html$Html$span,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(a.name)
+										]))
+								]));
+					},
+					activities))
+			]));
+};
 var $truqu$elm_oauth2$OAuth$errorCodeToString = function (err) {
 	switch (err.$) {
 		case 'InvalidRequest':
@@ -8227,8 +8272,37 @@ var $author$project$Myride$viewErrored = function (error) {
 				]))
 		]);
 };
+var $author$project$Myride$viewLog = function (log) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Log')
+					])),
+				A2(
+				$elm$html$Html$ul,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (i) {
+						return A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(i)
+								]));
+					},
+					log))
+			]));
+};
 var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
-var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
@@ -8236,8 +8310,8 @@ var $elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $author$project$Myride$viewUserInfo = F3(
-	function (_v0, ui, act) {
+var $author$project$Myride$viewUserInfo = F2(
+	function (_v0, ui) {
 		var btnClass = _v0.btnClass;
 		return _List_fromArray(
 			[
@@ -8288,26 +8362,7 @@ var $author$project$Myride$viewUserInfo = F3(
 									[
 										$elm$html$Html$text('Sign out')
 									]))
-							])),
-						A2(
-						$elm$html$Html$ul,
-						_List_Nil,
-						A2(
-							$elm$core$List$cons,
-							$elm$html$Html$text('Activities'),
-							A2(
-								$elm$core$List$map,
-								function (a) {
-									return A2(
-										$elm$html$Html$li,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(a.name),
-												$elm$html$Html$text(a.startDateLocal)
-											]));
-								},
-								act)))
+							]))
 					]))
 			]);
 	});
@@ -8376,7 +8431,7 @@ var $author$project$Myride$viewBody = F2(
 									]);
 							} else {
 								var userInfo_ = _v1.a;
-								return A3($author$project$Myride$viewUserInfo, config, userInfo_, model.activities);
+								return A2($author$project$Myride$viewUserInfo, config, userInfo_);
 							}
 						default:
 							var err = _v0.a;
@@ -8390,36 +8445,14 @@ var $author$project$Myride$viewBody = F2(
 											]);
 									} else {
 										var userInfo_ = _v2.a;
-										return A3($author$project$Myride$viewUserInfo, config, userInfo_, model.activities);
+										return A2($author$project$Myride$viewUserInfo, config, userInfo_);
 									}
 								}(),
 								$author$project$Myride$viewErrored(err));
 					}
 				}()),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$ul,
-						_List_Nil,
-						A2(
-							$elm$core$List$cons,
-							$elm$html$Html$text('Log'),
-							A2(
-								$elm$core$List$map,
-								function (i) {
-									return A2(
-										$elm$html$Html$li,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(i)
-											]));
-								},
-								model.log)))
-					]))
+				$author$project$Myride$viewActivities(model.activities),
+				$author$project$Myride$viewLog(model.log)
 			]);
 	});
 var $author$project$Myride$view = F2(
