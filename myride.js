@@ -7127,7 +7127,7 @@ var $author$project$Myride$init = F3(
 						$elm$core$Platform$Cmd$batch(
 							_List_fromArray(
 								[
-									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$AccessTokenRequested),
+									A2($andrewMacmurray$elm_delay$Delay$after, 50, $author$project$Myride$AccessTokenRequested),
 									clearUrl
 								])));
 				}
@@ -8076,7 +8076,7 @@ var $author$project$Myride$update = F2(
 											{
 												flow: $author$project$Myride$Authenticated(token)
 											}),
-										A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$UserInfoRequested));
+										A2($andrewMacmurray$elm_delay$Delay$after, 50, $author$project$Myride$UserInfoRequested));
 								} else {
 									break _v0$9;
 								}
@@ -8128,6 +8128,7 @@ var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -8149,6 +8150,7 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $truqu$elm_oauth2$OAuth$errorCodeToString = function (err) {
 	switch (err.$) {
 		case 'InvalidRequest':
@@ -8228,14 +8230,12 @@ var $author$project$Myride$viewErrored = function (error) {
 var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$img = _VirtualDom_node('img');
-var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Myride$viewUserInfo = F3(
 	function (_v0, ui, act) {
 		var btnClass = _v0.btnClass;
@@ -8394,7 +8394,31 @@ var $author$project$Myride$viewBody = F2(
 								}(),
 								$author$project$Myride$viewErrored(err));
 					}
-				}())
+				}()),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$ul,
+						_List_Nil,
+						A2(
+							$elm$core$List$cons,
+							$elm$html$Html$text('Log'),
+							A2(
+								$elm$core$List$map,
+								function (i) {
+									return A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(i)
+											]));
+								},
+								model.log)))
+					]))
 			]);
 	});
 var $author$project$Myride$view = F2(
