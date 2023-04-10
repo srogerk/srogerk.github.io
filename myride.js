@@ -6257,7 +6257,6 @@ var $author$project$Myride$convertBytes = A2(
 		function (state) {
 			return {state: state};
 		}));
-var $author$project$Myride$AccessTokenRequested = {$: 'AccessTokenRequested'};
 var $author$project$Myride$Authorized = function (a) {
 	return {$: 'Authorized', a: a};
 };
@@ -6269,16 +6268,8 @@ var $author$project$Myride$Errored = function (a) {
 	return {$: 'Errored', a: a};
 };
 var $author$project$Myride$Idle = {$: 'Idle'};
-var $elm$core$Process$sleep = _Process_sleep;
-var $andrewMacmurray$elm_delay$Delay$after = F2(
-	function (time, msg) {
-		return A2(
-			$elm$core$Task$perform,
-			$elm$core$Basics$always(msg),
-			$elm$core$Process$sleep(time));
-	});
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Basics$neq = _Utils_notEqual;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $truqu$elm_oauth2$Internal$AuthorizationError = F4(
 	function (error, errorDescription, errorUri, state) {
@@ -7088,6 +7079,7 @@ var $author$project$Myride$init = F3(
 		var redirectUri = _Utils_update(
 			origin,
 			{fragment: $elm$core$Maybe$Nothing, query: $elm$core$Maybe$Nothing});
+		var zeroModel = {activities: _List_Nil, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing};
 		var clearUrl = A2(
 			$elm$browser$Browser$Navigation$replaceUrl,
 			navigationKey,
@@ -7095,60 +7087,45 @@ var $author$project$Myride$init = F3(
 		var _v0 = $truqu$elm_oauth2$OAuth$AuthorizationCode$parseCode(origin);
 		switch (_v0.$) {
 			case 'Empty':
-				return _Utils_Tuple2(
-					{activities: _List_Nil, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing},
-					$elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(zeroModel, $elm$core$Platform$Cmd$none);
 			case 'Success':
 				var code = _v0.a.code;
 				var state = _v0.a.state;
 				if (mflags.$ === 'Nothing') {
 					return _Utils_Tuple2(
-						{
-							activities: _List_Nil,
-							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
-							log: _List_Nil,
-							redirectUri: redirectUri,
-							userInfo: $elm$core$Maybe$Nothing
-						},
+						_Utils_update(
+							zeroModel,
+							{
+								flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch)
+							}),
 						clearUrl);
 				} else {
 					var flags = mflags.a;
 					return (!_Utils_eq(
 						state,
 						$elm$core$Maybe$Just(flags.state))) ? _Utils_Tuple2(
-						{
-							activities: _List_Nil,
-							flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch),
-							log: _List_Nil,
-							redirectUri: redirectUri,
-							userInfo: $elm$core$Maybe$Nothing
-						},
+						_Utils_update(
+							zeroModel,
+							{
+								flow: $author$project$Myride$Errored($author$project$Myride$ErrStateMismatch)
+							}),
 						clearUrl) : _Utils_Tuple2(
-						{
-							activities: _List_Nil,
-							flow: $author$project$Myride$Authorized(code),
-							log: _List_Nil,
-							redirectUri: redirectUri,
-							userInfo: $elm$core$Maybe$Nothing
-						},
-						$elm$core$Platform$Cmd$batch(
-							_List_fromArray(
-								[
-									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$AccessTokenRequested),
-									clearUrl
-								])));
+						_Utils_update(
+							zeroModel,
+							{
+								flow: $author$project$Myride$Authorized(code)
+							}),
+						clearUrl);
 				}
 			default:
 				var error = _v0.a;
 				return _Utils_Tuple2(
-					{
-						activities: _List_Nil,
-						flow: $author$project$Myride$Errored(
-							$author$project$Myride$ErrAuthorization(error)),
-						log: _List_Nil,
-						redirectUri: redirectUri,
-						userInfo: $elm$core$Maybe$Nothing
-					},
+					_Utils_update(
+						zeroModel,
+						{
+							flow: $author$project$Myride$Errored(
+								$author$project$Myride$ErrAuthorization(error))
+						}),
 					clearUrl);
 		}
 	});
@@ -7162,12 +7139,15 @@ var $author$project$Myride$randomBytes = _Platform_incomingPort(
 var $author$project$Myride$Authenticated = function (a) {
 	return {$: 'Authenticated', a: a};
 };
-var $author$project$Myride$ErrAuthentication = function (a) {
-	return {$: 'ErrAuthentication', a: a};
-};
-var $author$project$Myride$ErrHTTPGetAccessToken = {$: 'ErrHTTPGetAccessToken'};
-var $author$project$Myride$ErrHTTPGetUserInfo = {$: 'ErrHTTPGetUserInfo'};
 var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
+var $elm$core$Process$sleep = _Process_sleep;
+var $andrewMacmurray$elm_delay$Delay$after = F2(
+	function (time, msg) {
+		return A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$always(msg),
+			$elm$core$Process$sleep(time));
+	});
 var $author$project$Myride$Activity = F6(
 	function (id, name, distance, movingtime, elapsedtime, startDateLocal) {
 		return {distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
@@ -7201,7 +7181,7 @@ var $author$project$Myride$configuration = {
 		{path: '/oauth/authorize'}),
 	clientId: '68838',
 	scope: _List_fromArray(
-		['read']),
+		['read_all', 'activity:read_all']),
 	tokenEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/oauth/token'}),
@@ -7217,10 +7197,18 @@ var $author$project$Myride$configuration = {
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/api/v3/athlete'})
 };
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $truqu$elm_oauth2$Internal$AuthenticationError = F3(
-	function (error, errorDescription, errorUri) {
-		return {error: error, errorDescription: errorDescription, errorUri: errorUri};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Myride$genRandomBytes = _Platform_outgoingPort('genRandomBytes', $elm$json$Json$Encode$int);
+var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
+var $author$project$Myride$GotAccessToken = function (a) {
+	return {$: 'GotAccessToken', a: a};
+};
+var $author$project$Myride$HttpResponse = function (a) {
+	return {$: 'HttpResponse', a: a};
+};
+var $truqu$elm_oauth2$Internal$AuthenticationSuccess = F4(
+	function (token, refreshToken, expiresIn, scope) {
+		return {expiresIn: expiresIn, refreshToken: refreshToken, scope: scope, token: token};
 	});
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -7230,32 +7218,6 @@ var $elm$json$Json$Decode$maybe = function (decoder) {
 				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
 			]));
 };
-var $truqu$elm_oauth2$Internal$errorDescriptionDecoder = $elm$json$Json$Decode$maybe(
-	A2($elm$json$Json$Decode$field, 'error_description', $elm$json$Json$Decode$string));
-var $truqu$elm_oauth2$Internal$errorUriDecoder = $elm$json$Json$Decode$maybe(
-	A2($elm$json$Json$Decode$field, 'error_uri', $elm$json$Json$Decode$string));
-var $elm$json$Json$Decode$map3 = _Json_map3;
-var $truqu$elm_oauth2$Internal$authenticationErrorDecoder = function (errorCodeDecoder) {
-	return A4($elm$json$Json$Decode$map3, $truqu$elm_oauth2$Internal$AuthenticationError, errorCodeDecoder, $truqu$elm_oauth2$Internal$errorDescriptionDecoder, $truqu$elm_oauth2$Internal$errorUriDecoder);
-};
-var $truqu$elm_oauth2$Internal$errorDecoder = function (errorCodeFromString) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		errorCodeFromString,
-		A2($elm$json$Json$Decode$field, 'error', $elm$json$Json$Decode$string));
-};
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorDecoder = $truqu$elm_oauth2$Internal$errorDecoder($truqu$elm_oauth2$OAuth$errorCodeFromString);
-var $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationErrorDecoder = $truqu$elm_oauth2$Internal$authenticationErrorDecoder($truqu$elm_oauth2$OAuth$AuthorizationCode$defaultErrorDecoder);
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $author$project$Myride$genRandomBytes = _Platform_outgoingPort('genRandomBytes', $elm$json$Json$Encode$int);
-var $truqu$elm_oauth2$OAuth$AuthorizationCode = {$: 'AuthorizationCode'};
-var $author$project$Myride$GotAccessToken = function (a) {
-	return {$: 'GotAccessToken', a: a};
-};
-var $truqu$elm_oauth2$Internal$AuthenticationSuccess = F4(
-	function (token, refreshToken, expiresIn, scope) {
-		return {expiresIn: expiresIn, refreshToken: refreshToken, scope: scope, token: token};
-	});
 var $truqu$elm_oauth2$Internal$expiresInDecoder = $elm$json$Json$Decode$maybe(
 	A2($elm$json$Json$Decode$field, 'expires_in', $elm$json$Json$Decode$int));
 var $elm$json$Json$Decode$map4 = _Json_map4;
@@ -7455,6 +7417,7 @@ var $truqu$elm_oauth2$Internal$makeRedirectUri = function (url) {
 					url.query))
 			]));
 };
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
 		return {$: 'BadStatus_', a: a, b: b};
@@ -7821,9 +7784,9 @@ var $author$project$Myride$getAccessToken = F3(
 			A5(
 				$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith,
 				$truqu$elm_oauth2$OAuth$AuthorizationCode,
-				$truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder,
+				A2($elm$json$Json$Decode$map, $author$project$Myride$GotAccessToken, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder),
 				A2($elm$core$Dict$singleton, 'client_secret', 'bee8686fc893568412f98144895793c28ae48cdc'),
-				$author$project$Myride$GotAccessToken,
+				$author$project$Myride$HttpResponse,
 				{
 					code: code,
 					credentials: {
@@ -7856,7 +7819,10 @@ var $author$project$Myride$getActivityList = F2(
 		return $elm$http$Http$request(
 			{
 				body: $elm$http$Http$emptyBody,
-				expect: A2($elm$http$Http$expectJson, $author$project$Myride$GotActivityList, activityListDecoder),
+				expect: A2(
+					$elm$http$Http$expectJson,
+					$author$project$Myride$HttpResponse,
+					A2($elm$json$Json$Decode$map, $author$project$Myride$GotActivityList, activityListDecoder)),
 				headers: A2($truqu$elm_oauth2$OAuth$useToken, token, _List_Nil),
 				method: 'GET',
 				timeout: $elm$core$Maybe$Nothing,
@@ -7874,7 +7840,10 @@ var $author$project$Myride$getUserInfo = F2(
 		return $elm$http$Http$request(
 			{
 				body: $elm$http$Http$emptyBody,
-				expect: A2($elm$http$Http$expectJson, $author$project$Myride$GotUserInfo, userInfoDecoder),
+				expect: A2(
+					$elm$http$Http$expectJson,
+					$author$project$Myride$HttpResponse,
+					A2($elm$json$Json$Decode$map, $author$project$Myride$GotUserInfo, userInfoDecoder)),
 				headers: A2($truqu$elm_oauth2$OAuth$useToken, token, _List_Nil),
 				method: 'GET',
 				timeout: $elm$core$Maybe$Nothing,
@@ -7996,159 +7965,154 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl = A2($truqu$e
 var $author$project$Myride$update = F2(
 	function (msg, model) {
 		var _v0 = _Utils_Tuple2(model.flow, msg);
-		_v0$8:
+		_v0$9:
 		while (true) {
-			switch (_v0.a.$) {
-				case 'Idle':
-					switch (_v0.b.$) {
-						case 'SignInRequested':
-							var _v1 = _v0.a;
-							var _v2 = _v0.b;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{flow: $author$project$Myride$Idle}),
-								$author$project$Myride$genRandomBytes(16));
-						case 'GotRandomBytes':
-							var _v3 = _v0.a;
-							var bytes = _v0.b.a;
-							var _v4 = $author$project$Myride$convertBytes(bytes);
-							var state = _v4.state;
-							var authorization = {
-								clientId: $author$project$Myride$configuration.clientId,
-								redirectUri: model.redirectUri,
-								scope: $author$project$Myride$configuration.scope,
-								state: $elm$core$Maybe$Just(state),
-								url: $author$project$Myride$configuration.authorizationEndpoint
-							};
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{flow: $author$project$Myride$Idle}),
-								$elm$browser$Browser$Navigation$load(
-									$elm$url$Url$toString(
-										$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl(authorization))));
-						default:
-							break _v0$8;
+			switch (_v0.b.$) {
+				case 'SignInRequested':
+					if (_v0.a.$ === 'Idle') {
+						var _v2 = _v0.a;
+						var _v3 = _v0.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{flow: $author$project$Myride$Idle}),
+							$author$project$Myride$genRandomBytes(16));
+					} else {
+						break _v0$9;
 					}
-				case 'Authorized':
-					switch (_v0.b.$) {
-						case 'AccessTokenRequested':
-							var code = _v0.a.a;
-							var _v5 = _v0.b;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										flow: $author$project$Myride$Authorized(code)
-									}),
-								A3($author$project$Myride$getAccessToken, $author$project$Myride$configuration, model.redirectUri, code));
-						case 'GotAccessToken':
-							var authenticationResponse = _v0.b.a;
-							if (authenticationResponse.$ === 'Err') {
-								if (authenticationResponse.a.$ === 'BadBody') {
-									var body = authenticationResponse.a.a;
-									var flow = function () {
-										var _v7 = A2($elm$json$Json$Decode$decodeString, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationErrorDecoder, body);
-										if (_v7.$ === 'Ok') {
-											var error = _v7.a;
-											return $author$project$Myride$Errored(
-												$author$project$Myride$ErrAuthentication(error));
-										} else {
-											return $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetAccessToken);
-										}
-									}();
-									return _Utils_Tuple2(
-										_Utils_update(
-											model,
-											{flow: flow}),
-										$elm$core$Platform$Cmd$none);
-								} else {
+				case 'GotRandomBytes':
+					if (_v0.a.$ === 'Idle') {
+						var _v4 = _v0.a;
+						var bytes = _v0.b.a;
+						var _v5 = $author$project$Myride$convertBytes(bytes);
+						var state = _v5.state;
+						var authorization = {
+							clientId: $author$project$Myride$configuration.clientId,
+							redirectUri: model.redirectUri,
+							scope: $author$project$Myride$configuration.scope,
+							state: $elm$core$Maybe$Just(state),
+							url: $author$project$Myride$configuration.authorizationEndpoint
+						};
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{flow: $author$project$Myride$Idle}),
+							$elm$browser$Browser$Navigation$load(
+								$elm$url$Url$toString(
+									$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl(authorization))));
+					} else {
+						break _v0$9;
+					}
+				case 'AccessTokenRequested':
+					if (_v0.a.$ === 'Authorized') {
+						var code = _v0.a.a;
+						var _v6 = _v0.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									flow: $author$project$Myride$Authorized(code)
+								}),
+							A3($author$project$Myride$getAccessToken, $author$project$Myride$configuration, model.redirectUri, code));
+					} else {
+						break _v0$9;
+					}
+				case 'UserInfoRequested':
+					if (_v0.a.$ === 'Authenticated') {
+						var token = _v0.a.a;
+						var _v7 = _v0.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									flow: $author$project$Myride$Authenticated(token)
+								}),
+							A2($author$project$Myride$getUserInfo, $author$project$Myride$configuration, token));
+					} else {
+						break _v0$9;
+					}
+				case 'HttpResponse':
+					if (_v0.b.a.$ === 'Err') {
+						var error = _v0.b.a.a;
+						var errText = function () {
+							switch (error.$) {
+								case 'BadStatus':
+									var code = error.a;
+									return 'Http - bad status: ' + $elm$core$String$fromInt(code);
+								case 'BadBody':
+									var errMessage = error.a;
+									return 'Http - bad body: ' + errMessage;
+								case 'BadUrl':
+									var url = error.a;
+									return 'Http - bad url: ' + url;
+								case 'NetworkError':
+									return 'Http - network error';
+								default:
+									return 'Http - timeout';
+							}
+						}();
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									log: A2($elm$core$List$cons, errText, model.log)
+								}),
+							$elm$core$Platform$Cmd$none);
+					} else {
+						switch (_v0.a.$) {
+							case 'Authorized':
+								if (_v0.b.a.a.$ === 'GotAccessToken') {
+									var token = _v0.b.a.a.a.token;
 									return _Utils_Tuple2(
 										_Utils_update(
 											model,
 											{
-												flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetAccessToken)
+												flow: $author$project$Myride$Authenticated(token)
 											}),
-										$elm$core$Platform$Cmd$none);
+										A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$UserInfoRequested));
+								} else {
+									break _v0$9;
 								}
-							} else {
-								var token = authenticationResponse.a.token;
-								return _Utils_Tuple2(
-									_Utils_update(
-										model,
-										{
-											flow: $author$project$Myride$Authenticated(token)
-										}),
-									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$UserInfoRequested));
-							}
-						default:
-							break _v0$8;
+							case 'Authenticated':
+								switch (_v0.b.a.a.$) {
+									case 'GotActivityList':
+										var activityList = _v0.b.a.a.a;
+										return _Utils_Tuple2(
+											_Utils_update(
+												model,
+												{activities: activityList}),
+											$elm$core$Platform$Cmd$none);
+									case 'GotUserInfo':
+										var token = _v0.a.a;
+										var userInfo = _v0.b.a.a.a;
+										return _Utils_Tuple2(
+											_Utils_update(
+												model,
+												{
+													userInfo: $elm$core$Maybe$Just(userInfo)
+												}),
+											A2($author$project$Myride$getActivityList, $author$project$Myride$configuration, token));
+									default:
+										break _v0$9;
+								}
+							default:
+								break _v0$9;
+						}
 					}
-				case 'Authenticated':
-					switch (_v0.b.$) {
-						case 'UserInfoRequested':
-							var token = _v0.a.a;
-							var _v8 = _v0.b;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										flow: $author$project$Myride$Authenticated(token)
-									}),
-								A2($author$project$Myride$getUserInfo, $author$project$Myride$configuration, token));
-						case 'GotActivityList':
-							var activityListResponse = _v0.b.a;
-							if (activityListResponse.$ === 'Err') {
-								return _Utils_Tuple2(
-									_Utils_update(
-										model,
-										{
-											flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetUserInfo)
-										}),
-									$elm$core$Platform$Cmd$none);
-							} else {
-								var activityList = activityListResponse.a;
-								return _Utils_Tuple2(
-									_Utils_update(
-										model,
-										{activities: activityList}),
-									$elm$core$Platform$Cmd$none);
-							}
-						case 'GotUserInfo':
-							var token = _v0.a.a;
-							var userInfoResponse = _v0.b.a;
-							if (userInfoResponse.$ === 'Err') {
-								return _Utils_Tuple2(
-									_Utils_update(
-										model,
-										{
-											flow: $author$project$Myride$Errored($author$project$Myride$ErrHTTPGetUserInfo)
-										}),
-									$elm$core$Platform$Cmd$none);
-							} else {
-								var userInfo_ = userInfoResponse.a;
-								return _Utils_Tuple2(
-									_Utils_update(
-										model,
-										{
-											userInfo: $elm$core$Maybe$Just(userInfo_)
-										}),
-									A2($author$project$Myride$getActivityList, $author$project$Myride$configuration, token));
-							}
-						case 'SignOutRequested':
-							var _v11 = _v0.b;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{flow: $author$project$Myride$Idle}),
-								$elm$browser$Browser$Navigation$load(
-									$elm$url$Url$toString(model.redirectUri)));
-						default:
-							break _v0$8;
+				case 'SignOutRequested':
+					if (_v0.a.$ === 'Authenticated') {
+						var _v8 = _v0.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{flow: $author$project$Myride$Idle}),
+							$elm$browser$Browser$Navigation$load(
+								$elm$url$Url$toString(model.redirectUri)));
+					} else {
+						break _v0$9;
 					}
 				default:
-					break _v0$8;
+					break _v0$9;
 			}
 		}
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -8232,8 +8196,10 @@ var $author$project$Myride$viewError = function (e) {
 						{error: error.error, errorDescription: error.errorDescription});
 				case 'ErrHTTPGetAccessToken':
 					return 'Unable to retrieve token: HTTP request failed. CORS is likely disabled on the authorization server.';
-				default:
+				case 'ErrHTTPGetUserInfo':
 					return 'Unable to retrieve user info: HTTP request failed.';
+				default:
+					return 'Unable to retrieve activity list: HTTP request failed.';
 			}
 		}());
 };
@@ -8406,7 +8372,20 @@ var $author$project$Myride$viewBody = F2(
 							}
 						default:
 							var err = _v0.a;
-							return $author$project$Myride$viewErrored(err);
+							return _Utils_ap(
+								function () {
+									var _v2 = model.userInfo;
+									if (_v2.$ === 'Nothing') {
+										return _List_fromArray(
+											[
+												$elm$html$Html$text('No user info (not logged in)')
+											]);
+									} else {
+										var userInfo_ = _v2.a;
+										return A3($author$project$Myride$viewUserInfo, config, userInfo_, model.activities);
+									}
+								}(),
+								$author$project$Myride$viewErrored(err));
 					}
 				}())
 			]);
