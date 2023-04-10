@@ -7173,7 +7173,7 @@ var $author$project$Myride$configuration = {
 		A7(
 			$elm$json$Json$Decode$map6,
 			$author$project$Myride$Activity,
-			A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+			A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
 			A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
 			A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float),
 			A2($elm$json$Json$Decode$field, 'movingtime', $elm$json$Json$Decode$int),
@@ -8303,7 +8303,8 @@ var $author$project$Myride$viewUserInfo = F3(
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text(a.name)
+												$elm$html$Html$text(a.name),
+												$elm$html$Html$text(a.startDateLocal)
 											]));
 								},
 								act)))
