@@ -7176,8 +7176,8 @@ var $author$project$Myride$configuration = {
 			A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
 			A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
 			A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'movingtime', $elm$json$Json$Decode$int),
-			A2($elm$json$Json$Decode$field, 'elapsedtime', $elm$json$Json$Decode$int),
+			A2($elm$json$Json$Decode$field, 'moving_time', $elm$json$Json$Decode$int),
+			A2($elm$json$Json$Decode$field, 'elapsed_time', $elm$json$Json$Decode$int),
 			A2($elm$json$Json$Decode$field, 'start_date_local', $elm$json$Json$Decode$string))),
 	activityListEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
