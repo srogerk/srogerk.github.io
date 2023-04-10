@@ -7772,10 +7772,6 @@ var $elm$http$Http$request = function (r) {
 		$elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
-var $elm$core$Dict$singleton = F2(
-	function (key, value) {
-		return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-	});
 var $author$project$Myride$getAccessToken = F3(
 	function (_v0, redirectUri, code) {
 		var clientId = _v0.clientId;
@@ -7785,7 +7781,12 @@ var $author$project$Myride$getAccessToken = F3(
 				$truqu$elm_oauth2$OAuth$AuthorizationCode$makeTokenRequestWith,
 				$truqu$elm_oauth2$OAuth$AuthorizationCode,
 				A2($elm$json$Json$Decode$map, $author$project$Myride$GotAccessToken, $truqu$elm_oauth2$OAuth$AuthorizationCode$defaultAuthenticationSuccessDecoder),
-				A2($elm$core$Dict$singleton, 'client_secret', 'bee8686fc893568412f98144895793c28ae48cdc'),
+				$elm$core$Dict$fromList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('client_secret', 'bee8686fc893568412f98144895793c28ae48cdc'),
+							_Utils_Tuple2('approval_prompt', 'force')
+						])),
 				$author$project$Myride$HttpResponse,
 				{
 					code: code,
