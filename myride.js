@@ -7181,7 +7181,7 @@ var $author$project$Myride$configuration = {
 		{path: '/oauth/authorize'}),
 	clientId: '68838',
 	scope: _List_fromArray(
-		['read_all', 'activity:read_all']),
+		['read_all,activity:read_all']),
 	tokenEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/oauth/token'}),
@@ -7784,7 +7784,7 @@ var $author$project$Myride$getAccessToken = F3(
 				$elm$core$Dict$fromList(
 					_List_fromArray(
 						[
-							_Utils_Tuple2('client_secret', 'bee8686fc893568412f98144895793c28ae48cdc'),
+							_Utils_Tuple2('client_secret', '2cf0eee311a904cbf75d9e294c80758d99f222dd'),
 							_Utils_Tuple2('approval_prompt', 'force')
 						])),
 				$author$project$Myride$HttpResponse,
@@ -7792,7 +7792,7 @@ var $author$project$Myride$getAccessToken = F3(
 					code: code,
 					credentials: {
 						clientId: clientId,
-						secret: $elm$core$Maybe$Just('bee8686fc893568412f98144895793c28ae48cdc')
+						secret: $elm$core$Maybe$Just('2cf0eee311a904cbf75d9e294c80758d99f222dd')
 					},
 					redirectUri: redirectUri,
 					url: tokenEndpoint
