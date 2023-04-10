@@ -6257,6 +6257,7 @@ var $author$project$Myride$convertBytes = A2(
 		function (state) {
 			return {state: state};
 		}));
+var $author$project$Myride$AccessTokenRequested = {$: 'AccessTokenRequested'};
 var $author$project$Myride$Authorized = function (a) {
 	return {$: 'Authorized', a: a};
 };
@@ -6268,8 +6269,16 @@ var $author$project$Myride$Errored = function (a) {
 	return {$: 'Errored', a: a};
 };
 var $author$project$Myride$Idle = {$: 'Idle'};
-var $elm$core$Basics$neq = _Utils_notEqual;
+var $elm$core$Process$sleep = _Process_sleep;
+var $andrewMacmurray$elm_delay$Delay$after = F2(
+	function (time, msg) {
+		return A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$always(msg),
+			$elm$core$Process$sleep(time));
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $truqu$elm_oauth2$Internal$AuthorizationError = F4(
 	function (error, errorDescription, errorUri, state) {
@@ -7115,7 +7124,12 @@ var $author$project$Myride$init = F3(
 							{
 								flow: $author$project$Myride$Authorized(code)
 							}),
-						clearUrl);
+						$elm$core$Platform$Cmd$batch(
+							_List_fromArray(
+								[
+									A2($andrewMacmurray$elm_delay$Delay$after, 750, $author$project$Myride$AccessTokenRequested),
+									clearUrl
+								])));
 				}
 			default:
 				var error = _v0.a;
@@ -7140,14 +7154,6 @@ var $author$project$Myride$Authenticated = function (a) {
 	return {$: 'Authenticated', a: a};
 };
 var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
-var $elm$core$Process$sleep = _Process_sleep;
-var $andrewMacmurray$elm_delay$Delay$after = F2(
-	function (time, msg) {
-		return A2(
-			$elm$core$Task$perform,
-			$elm$core$Basics$always(msg),
-			$elm$core$Process$sleep(time));
-	});
 var $author$project$Myride$Activity = F6(
 	function (id, name, distance, movingtime, elapsedtime, startDateLocal) {
 		return {distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
