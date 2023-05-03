@@ -5565,6 +5565,10 @@ var $author$project$Elchart$BarDef = F3(
 	function (legend, color, value) {
 		return {color: color, legend: legend, value: value};
 	});
+var $author$project$Elchart$ChartDef = F4(
+	function (title, unit, description, def) {
+		return {def: def, description: description, title: title, unit: unit};
+	});
 var $author$project$Elchart$SingleBar = function (a) {
 	return {$: 'SingleBar', a: a};
 };
@@ -5573,39 +5577,70 @@ var $author$project$Elchart$Stacked = function (a) {
 };
 var $terezka$elm_charts$Internal$Helpers$blue = '#12A5ED';
 var $terezka$elm_charts$Chart$Attributes$blue = $terezka$elm_charts$Internal$Helpers$blue;
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Elchart$decimals = function (v) {
+	return (v < 10) ? ($elm$core$Basics$round(10 * v) / 10) : $elm$core$Basics$round(v);
+};
+var $author$project$Elchart$uplift_buy = 0.05;
+var $author$project$Elchart$vat = 1.25;
+var $author$project$Elchart$buyEonSEK = function (r) {
+	return $author$project$Elchart$decimals($author$project$Elchart$vat * (r.buySEK + (r.buyKW * $author$project$Elchart$uplift_buy)));
+};
+var $author$project$Elchart$energytax = 0.45;
+var $author$project$Elchart$energytaxSEK = function (r) {
+	return $author$project$Elchart$decimals(r.buyKW * $author$project$Elchart$energytax);
+};
+var $author$project$Elchart$transferfee = 0.2075;
+var $author$project$Elchart$transferSEK = function (r) {
+	return $author$project$Elchart$decimals(r.buyKW * $author$project$Elchart$transferfee);
+};
+var $author$project$Elchart$buyTotalSEK = function (r) {
+	return $author$project$Elchart$decimals(
+		($author$project$Elchart$buyEonSEK(r) + $author$project$Elchart$energytaxSEK(r)) + $author$project$Elchart$transferSEK(r));
+};
 var $terezka$elm_charts$Internal$Helpers$green = '#71c614';
 var $terezka$elm_charts$Chart$Attributes$green = $terezka$elm_charts$Internal$Helpers$green;
 var $terezka$elm_charts$Internal$Helpers$red = '#F5325B';
 var $terezka$elm_charts$Chart$Attributes$red = $terezka$elm_charts$Internal$Helpers$red;
-var $author$project$Elchart$chartEkonomi = _List_fromArray(
-	[
-		$author$project$Elchart$Stacked(
-		_List_fromArray(
-			[
-				A3(
-				$author$project$Elchart$BarDef,
-				'Såld el SEK',
-				$terezka$elm_charts$Chart$Attributes$green,
-				function ($) {
-					return $.sellTotalSEK;
-				}),
-				A3(
-				$author$project$Elchart$BarDef,
-				'Egen el SEK',
-				$terezka$elm_charts$Chart$Attributes$blue,
-				function ($) {
-					return $.saveTotalSEK;
-				})
-			])),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Köpt el SEK',
-			$terezka$elm_charts$Chart$Attributes$red,
-			function ($) {
-				return $.buyTotalSEK;
-			}))
-	]);
+var $author$project$Elchart$saveTotalSEK = function (r) {
+	return $author$project$Elchart$decimals(
+		A2($elm$core$Basics$max, 0, r.prodSEK - r.sellSEK));
+};
+var $author$project$Elchart$natnytta = function (dat) {
+	return (dat < '2023') ? 0.06 : 0.08;
+};
+var $author$project$Elchart$natnyttaSEK = function (r) {
+	return $author$project$Elchart$decimals(
+		r.sellKW * $author$project$Elchart$natnytta(r.key));
+};
+var $author$project$Elchart$uplift_sell = 0.10;
+var $author$project$Elchart$sellEonSEK = function (r) {
+	return $author$project$Elchart$decimals(r.sellSEK + (r.sellKW * $author$project$Elchart$uplift_sell));
+};
+var $author$project$Elchart$taxreduction = 0.60;
+var $author$project$Elchart$taxredSEK = function (r) {
+	return $author$project$Elchart$decimals(r.sellKW * $author$project$Elchart$taxreduction);
+};
+var $author$project$Elchart$sellTotalSEK = function (r) {
+	return $author$project$Elchart$decimals(
+		($author$project$Elchart$sellEonSEK(r) + $author$project$Elchart$taxredSEK(r)) + $author$project$Elchart$natnyttaSEK(r));
+};
+var $author$project$Elchart$chartEkonomi = A4(
+	$author$project$Elchart$ChartDef,
+	'Ekonomi',
+	'SEK',
+	'Köp och såld el, inkl påslag, skatt, skattereduktion nätavgift och nätnytta',
+	_List_fromArray(
+		[
+			$author$project$Elchart$Stacked(
+			_List_fromArray(
+				[
+					A3($author$project$Elchart$BarDef, 'Såld el SEK', $terezka$elm_charts$Chart$Attributes$green, $author$project$Elchart$sellTotalSEK),
+					A3($author$project$Elchart$BarDef, 'Egen el SEK', $terezka$elm_charts$Chart$Attributes$blue, $author$project$Elchart$saveTotalSEK)
+				])),
+			$author$project$Elchart$SingleBar(
+			A3($author$project$Elchart$BarDef, 'Köpt el SEK', $terezka$elm_charts$Chart$Attributes$red, $author$project$Elchart$buyTotalSEK))
+		]));
 var $elm$bytes$Bytes$Encode$getWidth = function (builder) {
 	switch (builder.$) {
 		case 'I8':
@@ -6232,41 +6267,14 @@ var $chelovek0v$bbase64$Base64$Encode$string = function (input) {
 };
 var $author$project$Elchart$dbauth = $elm$core$Maybe$Just(
 	$chelovek0v$bbase64$Base64$Encode$encode(
-		$chelovek0v$bbase64$Base64$Encode$string('name:passw')));
+		$chelovek0v$bbase64$Base64$Encode$string('roger:karl1602')));
 var $author$project$Elchart$GotElLog = function (a) {
 	return {$: 'GotElLog', a: a};
 };
-var $author$project$Elchart$ElLogItem = function (key) {
-	return function (spotprice) {
-		return function (prodKW) {
-			return function (sellKW) {
-				return function (buyKW) {
-					return function (saveKW) {
-						return function (sellSEK) {
-							return function (taxredSEK) {
-								return function (natnyttaSEK) {
-									return function (sellTotalSEK) {
-										return function (buySEK) {
-											return function (energytaxSEK) {
-												return function (transfeeSEK) {
-													return function (buyTotalSEK) {
-														return function (saveTotalSEK) {
-															return {buyKW: buyKW, buySEK: buySEK, buyTotalSEK: buyTotalSEK, energytaxSEK: energytaxSEK, key: key, natnyttaSEK: natnyttaSEK, prodKW: prodKW, saveKW: saveKW, saveTotalSEK: saveTotalSEK, sellKW: sellKW, sellSEK: sellSEK, sellTotalSEK: sellTotalSEK, spotprice: spotprice, taxredSEK: taxredSEK, transfeeSEK: transfeeSEK};
-														};
-													};
-												};
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
+var $author$project$Elchart$ElLogItem = F5(
+	function (key, spotprice, prodKW, sellKW, buyKW) {
+		return {buyKW: buyKW, key: key, prodKW: prodKW, sellKW: sellKW, spotprice: spotprice};
+	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
@@ -6283,65 +6291,25 @@ var $author$project$Elchart$elLogItemDecoder = A2(
 	'value',
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'saveTotalSEK',
+		'buyKW',
 		$elm$json$Json$Decode$float,
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'buyTotalSEK',
+			'sellKW',
 			$elm$json$Json$Decode$float,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'transfeeSEK',
+				'prodKW',
 				$elm$json$Json$Decode$float,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'energytaxSEK',
+					'spotprice',
 					$elm$json$Json$Decode$float,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'buySEK',
-						$elm$json$Json$Decode$float,
-						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'sellTotalSEK',
-							$elm$json$Json$Decode$float,
-							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'natnyttaSEK',
-								$elm$json$Json$Decode$float,
-								A3(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'taxredSEK',
-									$elm$json$Json$Decode$float,
-									A3(
-										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'sellSEK',
-										$elm$json$Json$Decode$float,
-										A3(
-											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-											'saveKW',
-											$elm$json$Json$Decode$float,
-											A3(
-												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-												'buyKW',
-												$elm$json$Json$Decode$float,
-												A3(
-													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-													'sellKW',
-													$elm$json$Json$Decode$float,
-													A3(
-														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-														'prodKW',
-														$elm$json$Json$Decode$float,
-														A3(
-															$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-															'spotprice',
-															$elm$json$Json$Decode$float,
-															A3(
-																$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-																'logid',
-																$elm$json$Json$Decode$string,
-																$elm$json$Json$Decode$succeed($author$project$Elchart$ElLogItem)))))))))))))))));
+						'logid',
+						$elm$json$Json$Decode$string,
+						$elm$json$Json$Decode$succeed($author$project$Elchart$ElLogItem)))))));
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Elchart$elLogDecoder = A2(
 	$elm$json$Json$Decode$field,
@@ -6994,7 +6962,7 @@ var $elm$http$Http$request = function (r) {
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
 var $author$project$Elchart$getElLog = function (b64cred) {
-	var url = '/timstat.json';
+	var url = 'http://pcdb:5984/ellog/_design/log/_view/timstat';
 	var auth = A2(
 		$elm$http$Http$header,
 		'Authorization',
@@ -7018,9 +6986,9 @@ var $author$project$Elchart$init = F3(
 				credentials: $author$project$Elchart$dbauth,
 				dataFilter: $author$project$Elchart$NoDef,
 				ellog: $author$project$Elchart$NotAsked,
+				elsum: _List_Nil,
 				selectedChart: $author$project$Elchart$chartEkonomi,
 				spa: A2($author$project$Elchart$SpaModel, key, url),
-				sumellog: _List_Nil,
 				uiDrawerVisible: false,
 				userMessage: _Utils_Tuple2(false, _List_Nil)
 			},
@@ -7056,6 +7024,61 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
+var $author$project$Elchart$addElLogItem = F2(
+	function (a, b) {
+		return _Utils_update(
+			b,
+			{buyKW: a.buyKW + b.buyKW, buySEK: ((a.buyKW * a.spotprice) / 100) + b.buySEK, nbrLogItems: 1 + b.nbrLogItems, prodKW: a.prodKW + b.prodKW, prodSEK: ((a.prodKW * a.spotprice) / 100) + b.prodSEK, sellKW: a.sellKW + b.sellKW, sellSEK: ((a.sellKW * a.spotprice) / 100) + b.sellSEK});
+	});
+var $author$project$Elchart$ElSumItem = F9(
+	function (key, spotprice, prodKW, sellKW, buyKW, prodSEK, sellSEK, buySEK, nbrLogItems) {
+		return {buyKW: buyKW, buySEK: buySEK, key: key, nbrLogItems: nbrLogItems, prodKW: prodKW, prodSEK: prodSEK, sellKW: sellKW, sellSEK: sellSEK, spotprice: spotprice};
+	});
+var $author$project$Elchart$emptyElSumItem = function (k) {
+	return A9($author$project$Elchart$ElSumItem, k, 0, 0, 0, 0, 0, 0, 0, 0);
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Elchart$groupBy = F2(
+	function (groupkey, el) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (log, groups) {
+					if (!groups.b) {
+						return _List_fromArray(
+							[
+								A2(
+								$author$project$Elchart$addElLogItem,
+								log,
+								$author$project$Elchart$emptyElSumItem(
+									groupkey(log.key)))
+							]);
+					} else {
+						var lastg = groups.a;
+						var othergroups = groups.b;
+						return _Utils_eq(
+							groupkey(log.key),
+							lastg.key) ? A2(
+							$elm$core$List$cons,
+							A2($author$project$Elchart$addElLogItem, log, lastg),
+							othergroups) : A2(
+							$elm$core$List$cons,
+							A2(
+								$author$project$Elchart$addElLogItem,
+								log,
+								$author$project$Elchart$emptyElSumItem(
+									groupkey(log.key))),
+							groups);
+					}
+				}),
+			_List_Nil,
+			A2(
+				$elm$core$List$sortBy,
+				function ($) {
+					return $.key;
+				},
+				el));
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Tuple$second = function (_v0) {
@@ -7071,80 +7094,6 @@ var $author$project$Elchart$postUserMessage = F3(
 					alert,
 					A2($elm$core$List$cons, msg, model.userMessage.b))
 			});
-	});
-var $author$project$Elchart$addElLogItems = F2(
-	function (a, b) {
-		return _Utils_update(
-			b,
-			{buyKW: a.buyKW + b.buyKW, buySEK: a.buySEK + b.buySEK, buyTotalSEK: a.buyTotalSEK + b.buyTotalSEK, energytaxSEK: a.energytaxSEK + b.energytaxSEK, natnyttaSEK: a.natnyttaSEK + b.natnyttaSEK, prodKW: a.prodKW + b.prodKW, saveKW: a.saveKW + b.saveKW, saveTotalSEK: a.saveTotalSEK + b.saveTotalSEK, sellKW: a.sellKW + b.sellKW, sellSEK: a.sellSEK + b.sellSEK, sellTotalSEK: a.sellTotalSEK + b.sellTotalSEK, taxredSEK: a.taxredSEK + b.taxredSEK, transfeeSEK: a.transfeeSEK + b.transfeeSEK});
-	});
-var $elm$core$Basics$round = _Basics_round;
-var $author$project$Elchart$roundElLogItem = function (e) {
-	var decimals = function (v) {
-		return (v < 10) ? ($elm$core$Basics$round(10 * v) / 10) : $elm$core$Basics$round(v);
-	};
-	return _Utils_update(
-		e,
-		{
-			buyKW: decimals(e.buyKW),
-			buySEK: decimals(e.buySEK),
-			buyTotalSEK: decimals(e.buyTotalSEK),
-			energytaxSEK: decimals(e.energytaxSEK),
-			natnyttaSEK: decimals(e.natnyttaSEK),
-			prodKW: decimals(e.prodKW),
-			saveKW: decimals(e.saveKW),
-			saveTotalSEK: decimals(e.saveTotalSEK),
-			sellKW: decimals(e.sellKW),
-			sellSEK: decimals(e.sellSEK),
-			sellTotalSEK: decimals(e.sellTotalSEK),
-			taxredSEK: decimals(e.taxredSEK),
-			transfeeSEK: decimals(e.transfeeSEK)
-		});
-};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Elchart$sumInGroups = F2(
-	function (gfun, el) {
-		return A2(
-			$elm$core$List$map,
-			$author$project$Elchart$roundElLogItem,
-			A3(
-				$elm$core$List$foldr,
-				F2(
-					function (log, groups) {
-						if (!groups.b) {
-							return _List_fromArray(
-								[
-									_Utils_update(
-									log,
-									{
-										key: gfun(log.key)
-									})
-								]);
-						} else {
-							var lastg = groups.a;
-							var groups_ = groups.b;
-							return _Utils_eq(
-								gfun(log.key),
-								lastg.key) ? A2(
-								$elm$core$List$cons,
-								A2($author$project$Elchart$addElLogItems, log, lastg),
-								groups_) : A2(
-								$elm$core$List$cons,
-								_Utils_update(
-									log,
-									{
-										key: gfun(log.key)
-									}),
-								groups);
-						}
-					}),
-				_List_Nil,
-				A2(
-					$elm$core$List$sortBy,
-					function ($) {
-						return $.key;
-					},
-					el)));
 	});
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -7384,12 +7333,12 @@ var $author$project$Elchart$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{ellog: $author$project$Elchart$Loading, sumellog: _List_Nil}),
+							{ellog: $author$project$Elchart$Loading}),
 						$author$project$Elchart$getElLog(model.credentials));
 				case 'GotElLog':
 					var result = msg.a;
 					if (result.$ === 'Ok') {
-						var ellog = result.a;
+						var ellog_ = result.a;
 						return A2(
 							$author$project$Elchart$update,
 							$author$project$Elchart$FilterData(
@@ -7401,7 +7350,7 @@ var $author$project$Elchart$update = F2(
 								_Utils_update(
 									model,
 									{
-										ellog: $author$project$Elchart$Success(ellog)
+										ellog: $author$project$Elchart$Success(ellog_)
 									})));
 					} else {
 						var error = result.a;
@@ -7425,11 +7374,12 @@ var $author$project$Elchart$update = F2(
 									})),
 							$elm$core$Platform$Cmd$none);
 					}
-				case 'TopBarMenuIconClicked':
+				case 'ShowDrawer':
+					var yesno = msg.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{uiDrawerVisible: true}),
+							{uiDrawerVisible: yesno}),
 						$elm$core$Platform$Cmd$none);
 				case 'FilterData':
 					var datafilter = msg.a;
@@ -7443,13 +7393,13 @@ var $author$project$Elchart$update = F2(
 								$elm$core$String$startsWith(r)));
 					};
 					var groupFun = $elm$core$String$left;
-					var sumLog = function (el) {
+					var dataset = function (el) {
 						switch (datafilter.$) {
 							case 'RangeLevel':
 								var range = datafilter.a;
 								var level = datafilter.b;
 								return A2(
-									$author$project$Elchart$sumInGroups,
+									$author$project$Elchart$groupBy,
 									groupFun(level),
 									A2(rangeFilter, range, el));
 							case 'Latest':
@@ -7460,7 +7410,7 @@ var $author$project$Elchart$update = F2(
 										12,
 										$elm$core$List$reverse(
 											A2(
-												$author$project$Elchart$sumInGroups,
+												$author$project$Elchart$groupBy,
 												groupFun(level),
 												el))));
 							default:
@@ -7475,7 +7425,7 @@ var $author$project$Elchart$update = F2(
 								model,
 								{
 									dataFilter: datafilter,
-									sumellog: sumLog(ellog_),
+									elsum: dataset(ellog_),
 									uiDrawerVisible: false
 								}),
 							$elm$core$Platform$Cmd$none);
@@ -7512,7 +7462,9 @@ var $author$project$Elchart$RangeLevel = F2(
 	function (a, b) {
 		return {$: 'RangeLevel', a: a, b: b};
 	});
-var $author$project$Elchart$TopBarMenuIconClicked = {$: 'TopBarMenuIconClicked'};
+var $author$project$Elchart$ShowDrawer = function (a) {
+	return {$: 'ShowDrawer', a: a};
+};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7524,92 +7476,81 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $aforemny$material_components_web_elm$Material$TopAppBar$alignEnd = $elm$html$Html$Attributes$class('mdc-top-app-bar__section--align-end');
 var $aforemny$material_components_web_elm$Material$TopAppBar$alignStart = $elm$html$Html$Attributes$class('mdc-top-app-bar__section--align-start');
-var $terezka$elm_charts$Internal$Helpers$brown = '#871c1c';
-var $terezka$elm_charts$Chart$Attributes$brown = $terezka$elm_charts$Internal$Helpers$brown;
+var $terezka$elm_charts$Internal$Helpers$mint = '#6df0d2';
+var $terezka$elm_charts$Chart$Attributes$mint = $terezka$elm_charts$Internal$Helpers$mint;
 var $terezka$elm_charts$Internal$Helpers$orange = '#FF8400';
 var $terezka$elm_charts$Chart$Attributes$orange = $terezka$elm_charts$Internal$Helpers$orange;
 var $terezka$elm_charts$Internal$Helpers$yellow = '#FFCA00';
 var $terezka$elm_charts$Chart$Attributes$yellow = $terezka$elm_charts$Internal$Helpers$yellow;
-var $author$project$Elchart$chartDetail = _List_fromArray(
-	[
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Såld EON',
-			$terezka$elm_charts$Chart$Attributes$green,
-			function ($) {
-				return $.sellSEK;
-			})),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Skattered.',
-			$terezka$elm_charts$Chart$Attributes$orange,
-			function ($) {
-				return $.taxredSEK;
-			})),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Nätnytta',
-			$terezka$elm_charts$Chart$Attributes$blue,
-			function ($) {
-				return $.natnyttaSEK;
-			})),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Energiskatt',
-			$terezka$elm_charts$Chart$Attributes$yellow,
-			function ($) {
-				return $.energytaxSEK;
-			})),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Nätavgift',
-			$terezka$elm_charts$Chart$Attributes$brown,
-			function ($) {
-				return $.transfeeSEK;
-			})),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Köpt EON',
-			$terezka$elm_charts$Chart$Attributes$red,
-			function ($) {
-				return $.buySEK;
-			}))
-	]);
-var $author$project$Elchart$chartEnergi = _List_fromArray(
-	[
-		$author$project$Elchart$Stacked(
-		_List_fromArray(
-			[
-				A3(
-				$author$project$Elchart$BarDef,
-				'Såld el kW',
-				$terezka$elm_charts$Chart$Attributes$green,
-				function ($) {
-					return $.sellKW;
-				}),
-				A3(
-				$author$project$Elchart$BarDef,
-				'Egen el kW',
-				$terezka$elm_charts$Chart$Attributes$blue,
-				function ($) {
-					return $.saveKW;
-				})
-			])),
-		$author$project$Elchart$SingleBar(
-		A3(
-			$author$project$Elchart$BarDef,
-			'Köpt el kW',
-			$terezka$elm_charts$Chart$Attributes$red,
-			function ($) {
-				return $.buyKW;
-			}))
-	]);
+var $author$project$Elchart$chartDetail = A4(
+	$author$project$Elchart$ChartDef,
+	'Ekonomi',
+	'SEK',
+	'Köp och såld el, inkl påslag, skatt, skattereduktion nätavgift och nätnytta',
+	_List_fromArray(
+		[
+			$author$project$Elchart$Stacked(
+			_List_fromArray(
+				[
+					A3($author$project$Elchart$BarDef, 'Skattered.', $terezka$elm_charts$Chart$Attributes$mint, $author$project$Elchart$taxredSEK),
+					A3($author$project$Elchart$BarDef, 'Nätnytta', $terezka$elm_charts$Chart$Attributes$blue, $author$project$Elchart$natnyttaSEK),
+					A3($author$project$Elchart$BarDef, 'Såld EON', $terezka$elm_charts$Chart$Attributes$green, $author$project$Elchart$sellEonSEK)
+				])),
+			$author$project$Elchart$Stacked(
+			_List_fromArray(
+				[
+					A3($author$project$Elchart$BarDef, 'Energiskatt', $terezka$elm_charts$Chart$Attributes$yellow, $author$project$Elchart$energytaxSEK),
+					A3($author$project$Elchart$BarDef, 'Nätavgift', $terezka$elm_charts$Chart$Attributes$orange, $author$project$Elchart$transferSEK),
+					A3($author$project$Elchart$BarDef, 'Köpt EON', $terezka$elm_charts$Chart$Attributes$red, $author$project$Elchart$buyEonSEK)
+				]))
+		]));
+var $author$project$Elchart$buyKW = function (r) {
+	return $author$project$Elchart$decimals(r.buyKW);
+};
+var $author$project$Elchart$saveKW = function (r) {
+	return $author$project$Elchart$decimals(
+		A2($elm$core$Basics$max, 0, r.prodKW - r.sellKW));
+};
+var $author$project$Elchart$sellKW = function (r) {
+	return $author$project$Elchart$decimals(r.sellKW);
+};
+var $author$project$Elchart$chartEnergi = A4(
+	$author$project$Elchart$ChartDef,
+	'Energi',
+	'kWh',
+	'Köpt, såld och egenproducerad förbrukad energi.',
+	_List_fromArray(
+		[
+			$author$project$Elchart$Stacked(
+			_List_fromArray(
+				[
+					A3($author$project$Elchart$BarDef, 'Såld el kW', $terezka$elm_charts$Chart$Attributes$green, $author$project$Elchart$sellKW),
+					A3($author$project$Elchart$BarDef, 'Egen el kW', $terezka$elm_charts$Chart$Attributes$blue, $author$project$Elchart$saveKW)
+				])),
+			$author$project$Elchart$SingleBar(
+			A3($author$project$Elchart$BarDef, 'Köpt el kW', $terezka$elm_charts$Chart$Attributes$red, $author$project$Elchart$buyKW))
+		]));
+var $author$project$Elchart$decimals2 = function (v) {
+	return (v < 50) ? ($elm$core$Basics$round(100 * v) / 100) : $elm$core$Basics$round(v);
+};
+var $author$project$Elchart$avgBuyPrice = function (r) {
+	return $author$project$Elchart$decimals2(r.buySEK / r.buyKW);
+};
+var $author$project$Elchart$avgSellPrice = function (r) {
+	return $author$project$Elchart$decimals2(r.sellSEK / r.sellKW);
+};
+var $author$project$Elchart$chartSpot = A4(
+	$author$project$Elchart$ChartDef,
+	'Spotpriser',
+	'SEK/kWh',
+	'Medelspotpris inkl påslag och moms, för köpt och såld el. Dvs medelvärdet är viktat med förbrukninen resp produktionen',
+	_List_fromArray(
+		[
+			$author$project$Elchart$SingleBar(
+			A3($author$project$Elchart$BarDef, 'Sålt SEK/kW', $terezka$elm_charts$Chart$Attributes$green, $author$project$Elchart$avgSellPrice)),
+			$author$project$Elchart$SingleBar(
+			A3($author$project$Elchart$BarDef, 'Köpt SEK/kW', $terezka$elm_charts$Chart$Attributes$red, $author$project$Elchart$avgBuyPrice))
+		]));
 var $aforemny$material_components_web_elm$Material$Drawer$Modal$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -9597,8 +9538,8 @@ var $aforemny$material_components_web_elm$Material$Select$setSelected = F2(
 var $aforemny$material_components_web_elm$Material$Drawer$Modal$title = $elm$html$Html$Attributes$class('mdc-drawer__title');
 var $aforemny$material_components_web_elm$Material$TopAppBar$title = $elm$html$Html$Attributes$class('mdc-top-app-bar__title');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $elm$html$Html$blockquote = _VirtualDom_node('blockquote');
 var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
 var $terezka$elm_charts$Internal$Svg$Start = {$: 'Start'};
 var $terezka$elm_charts$Chart$Attributes$alignLeft = function (config) {
 	return _Utils_update(
@@ -10053,6 +9994,7 @@ var $terezka$elm_charts$Internal$Property$toConfigs = function (prop) {
 		return configs;
 	}
 };
+var $terezka$elm_charts$Internal$Helpers$brown = '#871c1c';
 var $terezka$elm_charts$Internal$Helpers$moss = '#92b42c';
 var $terezka$elm_charts$Internal$Helpers$purple = '#7b4dff';
 var $elm$core$Tuple$pair = F2(
@@ -13489,7 +13431,7 @@ var $author$project$Elchart$drillPathGen = F4(
 							case 0:
 								return A2(
 									$elm$core$List$cons,
-									A3($author$project$Elchart$DrillLevel, 'All', filter, isCurrent),
+									A3($author$project$Elchart$DrillLevel, 'From start', filter, isCurrent),
 									dl);
 							case 4:
 								var $temp$isCurrent = false,
@@ -13774,11 +13716,19 @@ var $terezka$elm_charts$Chart$Svg$label = F2(
 			plane,
 			A2($terezka$elm_charts$Internal$Helpers$apply, edits, $terezka$elm_charts$Internal$Svg$defaultLabel));
 	});
-var $terezka$elm_charts$Chart$label = F3(
-	function (attrs, inner, point) {
+var $terezka$elm_charts$Chart$labelAt = F4(
+	function (toX, toY, attrs, inner) {
 		return $terezka$elm_charts$Chart$SvgElement(
 			function (p) {
-				return A4($terezka$elm_charts$Chart$Svg$label, p, attrs, inner, point);
+				return A4(
+					$terezka$elm_charts$Chart$Svg$label,
+					p,
+					attrs,
+					inner,
+					{
+						x: toX(p.x),
+						y: toY(p.y)
+					});
 			});
 	});
 var $terezka$elm_charts$Internal$Coordinates$Axis = F7(
@@ -14747,6 +14697,12 @@ var $terezka$elm_charts$Chart$Attributes$moveRight = F2(
 		return _Utils_update(
 			config,
 			{xOff: config.xOff + v});
+	});
+var $terezka$elm_charts$Chart$Attributes$moveUp = F2(
+	function (v, config) {
+		return _Utils_update(
+			config,
+			{yOff: config.yOff - v});
 	});
 var $terezka$elm_charts$Internal$Property$Stacked = function (a) {
 	return {$: 'Stacked', a: a};
@@ -17316,7 +17272,65 @@ var $terezka$elm_charts$Chart$yLabels = function (edits) {
 			}));
 };
 var $author$project$Elchart$viewChart = F3(
-	function (bardefs, datafilter, ellogstat) {
+	function (chartdef, datafilter, ellogstat) {
+		var navigateUp = A2(
+			$elm$html$Html$span,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (dd) {
+					return A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								dd.current ? A2($elm$html$Html$Attributes$attribute, 'disabled', 'true') : $elm$html$Html$Events$onClick(
+								$author$project$Elchart$FilterData(dd.filter)),
+								A2($elm$html$Html$Attributes$style, 'margin-left', '5px')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(dd.label)
+							]));
+				},
+				$author$project$Elchart$drillPath(datafilter)));
+		var drawChart = function () {
+			var aBar = function (b) {
+				return A2(
+					$terezka$elm_charts$Chart$named,
+					b.legend,
+					A2(
+						$terezka$elm_charts$Chart$bar,
+						b.value,
+						_List_fromArray(
+							[
+								$terezka$elm_charts$Chart$Attributes$color(b.color)
+							])));
+			};
+			return $elm$core$List$map(
+				function (d) {
+					if (d.$ === 'Stacked') {
+						var bl = d.a;
+						return $terezka$elm_charts$Chart$stacked(
+							A2($elm$core$List$map, aBar, bl));
+					} else {
+						var b = d.a;
+						return aBar(b);
+					}
+				});
+		}();
+		var bottomMargin = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (d, a) {
+					if (d.$ === 'Stacked') {
+						var s = d.a;
+						return a + (20 * $elm$core$List$length(s));
+					} else {
+						return a + 20;
+					}
+				}),
+			60,
+			chartdef.def);
 		var binValue = function (b) {
 			return A2($elm$core$Basics$composeR, b.value, $elm$core$String$fromFloat);
 		};
@@ -17329,8 +17343,8 @@ var $author$project$Elchart$viewChart = F3(
 						_List_fromArray(
 							[
 								$terezka$elm_charts$Chart$Attributes$alignRight,
-								$terezka$elm_charts$Chart$Attributes$moveRight(30),
-								$terezka$elm_charts$Chart$Attributes$moveDown((n + 3) * 20)
+								$terezka$elm_charts$Chart$Attributes$moveRight(25),
+								$terezka$elm_charts$Chart$Attributes$moveDown(((n + 3) * 20) - 3)
 							]));
 				});
 			return A2(
@@ -17357,8 +17371,8 @@ var $author$project$Elchart$viewChart = F3(
 				return $.key;
 			},
 			function (k) {
-				var _v4 = $elm$core$String$length(k);
-				switch (_v4) {
+				var _v3 = $elm$core$String$length(k);
+				switch (_v3) {
 					case 0:
 						return 'From start';
 					case 4:
@@ -17372,35 +17386,10 @@ var $author$project$Elchart$viewChart = F3(
 					case 13:
 						return A2($elm$core$String$right, 2, k);
 					default:
-						var n = _v4;
+						var n = _v3;
 						return A2($elm$core$String$right, 2, k);
 				}
 			});
-		var barsFromBarDefs = function () {
-			var aBar = function (b) {
-				return A2(
-					$terezka$elm_charts$Chart$named,
-					b.legend,
-					A2(
-						$terezka$elm_charts$Chart$bar,
-						b.value,
-						_List_fromArray(
-							[
-								$terezka$elm_charts$Chart$Attributes$color(b.color)
-							])));
-			};
-			return $elm$core$List$map(
-				function (d) {
-					if (d.$ === 'Stacked') {
-						var bl = d.a;
-						return $terezka$elm_charts$Chart$stacked(
-							A2($elm$core$List$map, aBar, bl));
-					} else {
-						var b = d.a;
-						return aBar(b);
-					}
-				});
-		}();
 		return A2(
 			$terezka$elm_charts$Chart$chart,
 			_List_fromArray(
@@ -17410,10 +17399,11 @@ var $author$project$Elchart$viewChart = F3(
 					$terezka$elm_charts$Chart$Attributes$htmlAttrs(
 					_List_fromArray(
 						[
-							A2($elm$html$Html$Attributes$style, 'border', '1px solid darkgray')
+							A2($elm$html$Html$Attributes$style, 'border', '1px solid darkgray'),
+							A2($elm$html$Html$Attributes$style, 'margin-left', '5px')
 						])),
 					$terezka$elm_charts$Chart$Attributes$margin(
-					{bottom: 140, left: 80, right: 40, top: 40}),
+					{bottom: bottomMargin, left: 80, right: 40, top: 40}),
 					$terezka$elm_charts$Chart$Attributes$range(
 					_List_fromArray(
 						[
@@ -17441,47 +17431,36 @@ var $author$project$Elchart$viewChart = F3(
 			_Utils_ap(
 				_List_fromArray(
 					[
-						A3(
-						$terezka$elm_charts$Chart$label,
-						_List_Nil,
+						A4(
+						$terezka$elm_charts$Chart$labelAt,
+						function ($) {
+							return $.min;
+						},
+						function ($) {
+							return $.max;
+						},
 						_List_fromArray(
 							[
-								$elm$svg$Svg$text('Label here')
+								$terezka$elm_charts$Chart$Attributes$moveUp(15),
+								$terezka$elm_charts$Chart$Attributes$alignRight
 							]),
-						{x: 0, y: 0}),
+						_List_fromArray(
+							[
+								$elm$svg$Svg$text(chartdef.unit)
+							])),
 						A6(
 						$terezka$elm_charts$Chart$htmlAt,
 						function ($) {
-							return $.max;
+							return $.min;
 						},
 						function ($) {
 							return $.max;
 						},
-						-20,
-						0,
+						10,
+						35,
 						_List_Nil,
-						A2(
-							$elm$core$List$map,
-							function (dd) {
-								return A2(
-									$elm$html$Html$div,
-									_List_Nil,
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$button,
-											_List_fromArray(
-												[
-													$elm$html$Html$Events$onClick(
-													$author$project$Elchart$FilterData(dd.filter))
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text(dd.label)
-												]))
-										]));
-							},
-							$author$project$Elchart$drillPath(datafilter))),
+						_List_fromArray(
+							[navigateUp])),
 						$terezka$elm_charts$Chart$yLabels(
 						_List_fromArray(
 							[$terezka$elm_charts$Chart$Attributes$withGrid])),
@@ -17498,7 +17477,7 @@ var $author$project$Elchart$viewChart = F3(
 							[
 								$terezka$elm_charts$Chart$Attributes$roundTop(0.1)
 							]),
-						barsFromBarDefs(bardefs),
+						drawChart(chartdef.def),
 						ellogstat),
 						A4(
 						$terezka$elm_charts$Chart$legendsAt,
@@ -17518,7 +17497,7 @@ var $author$project$Elchart$viewChart = F3(
 							]),
 						_List_Nil)
 					]),
-				dataTable(bardefs)));
+				dataTable(chartdef.def)));
 	});
 var $author$project$Elchart$viewElLog = function (model) {
 	var _v0 = model.ellog;
@@ -17581,17 +17560,21 @@ var $author$project$Elchart$viewElLog = function (model) {
 					return 'No data';
 				}
 			}();
+			var chart = model.selectedChart;
 			return A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$blockquote,
-						_List_Nil,
+						$elm$html$Html$h3,
 						_List_fromArray(
 							[
-								$elm$html$Html$text(listRangeLevel)
+								$elm$html$Html$Attributes$title(chart.description)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(chart.title)
 							])),
 						A2(
 						$elm$html$Html$div,
@@ -17601,7 +17584,7 @@ var $author$project$Elchart$viewElLog = function (model) {
 							]),
 						_List_fromArray(
 							[
-								A3($author$project$Elchart$viewChart, model.selectedChart, model.dataFilter, model.sumellog)
+								A3($author$project$Elchart$viewChart, chart, model.dataFilter, model.elsum)
 							]))
 					]));
 	}
@@ -17639,7 +17622,7 @@ var $author$project$Elchart$view = function (model) {
 												$aforemny$material_components_web_elm$Material$IconButton$iconButton,
 												A2(
 													$aforemny$material_components_web_elm$Material$IconButton$setOnClick,
-													$author$project$Elchart$TopBarMenuIconClicked,
+													$author$project$Elchart$ShowDrawer(true),
 													A2(
 														$aforemny$material_components_web_elm$Material$IconButton$setAttributes,
 														_List_fromArray(
@@ -17684,7 +17667,20 @@ var $author$project$Elchart$view = function (model) {
 											[$aforemny$material_components_web_elm$Material$Drawer$Modal$title]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('Välj diagram')
+												$elm$html$Html$text('Alternativ'),
+												A2(
+												$aforemny$material_components_web_elm$Material$IconButton$iconButton,
+												A2(
+													$aforemny$material_components_web_elm$Material$IconButton$setAttributes,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'float', 'right')
+														]),
+													A2(
+														$aforemny$material_components_web_elm$Material$IconButton$setOnClick,
+														$author$project$Elchart$ShowDrawer(false),
+														$aforemny$material_components_web_elm$Material$IconButton$config)),
+												$aforemny$material_components_web_elm$Material$IconButton$icon('chevron_left'))
 											]))
 									])),
 								A2(
@@ -17709,72 +17705,42 @@ var $author$project$Elchart$view = function (model) {
 															$elm$core$Maybe$Just('Database credentials'),
 															$aforemny$material_components_web_elm$Material$TextField$config)))
 												])),
-										_List_fromArray(
-											[
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												$aforemny$material_components_web_elm$Material$List$Item$config,
-												_List_fromArray(
-													[
-														$elm$html$Html$text(
-														A2($elm$core$Maybe$withDefault, '', model.credentials))
-													])),
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												A2(
-													$aforemny$material_components_web_elm$Material$List$Item$setOnClick,
+										A2(
+											$elm$core$List$map,
+											function (_v0) {
+												var txt = _v0.a;
+												var msg = _v0.b;
+												return A2(
+													$aforemny$material_components_web_elm$Material$List$Item$listItem,
+													A2($aforemny$material_components_web_elm$Material$List$Item$setOnClick, msg, $aforemny$material_components_web_elm$Material$List$Item$config),
+													_List_fromArray(
+														[
+															$elm$html$Html$text(txt)
+														]));
+											},
+											_List_fromArray(
+												[
+													_Utils_Tuple2(
+													'Från start',
 													$author$project$Elchart$FilterData(
-														A2($author$project$Elchart$RangeLevel, '', 0)),
-													$aforemny$material_components_web_elm$Material$List$Item$config),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Från start')
-													])),
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												A2(
-													$aforemny$material_components_web_elm$Material$List$Item$setOnClick,
+														A2($author$project$Elchart$RangeLevel, '', 0))),
+													_Utils_Tuple2(
+													'Per år - senaste åren',
 													$author$project$Elchart$FilterData(
-														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelYear)),
-													$aforemny$material_components_web_elm$Material$List$Item$config),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Per år - senaste åren')
-													])),
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												A2(
-													$aforemny$material_components_web_elm$Material$List$Item$setOnClick,
+														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelYear))),
+													_Utils_Tuple2(
+													'Per månad - senaste månaderna',
 													$author$project$Elchart$FilterData(
-														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelMonth)),
-													$aforemny$material_components_web_elm$Material$List$Item$config),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Per månad - senaste månaderna')
-													])),
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												A2(
-													$aforemny$material_components_web_elm$Material$List$Item$setOnClick,
+														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelMonth))),
+													_Utils_Tuple2(
+													'Per dag - senaste dagarna',
 													$author$project$Elchart$FilterData(
-														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelDay)),
-													$aforemny$material_components_web_elm$Material$List$Item$config),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Per dag - senaste dagarna')
-													])),
-												A2(
-												$aforemny$material_components_web_elm$Material$List$Item$listItem,
-												A2(
-													$aforemny$material_components_web_elm$Material$List$Item$setOnClick,
+														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelDay))),
+													_Utils_Tuple2(
+													'Per timma - senaste timmarna',
 													$author$project$Elchart$FilterData(
-														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelHour)),
-													$aforemny$material_components_web_elm$Material$List$Item$config),
-												_List_fromArray(
-													[
-														$elm$html$Html$text('Per timma - senaste timmarna')
-													]))
-											])),
+														$author$project$Elchart$Latest($author$project$Elchart$rangeLevelHour)))
+												]))),
 										A3(
 										$aforemny$material_components_web_elm$Material$Select$filled,
 										A2(
@@ -17782,7 +17748,7 @@ var $author$project$Elchart$view = function (model) {
 											$author$project$Elchart$ChangeChart,
 											A2(
 												$aforemny$material_components_web_elm$Material$Select$setSelected,
-												$elm$core$Maybe$Nothing,
+												$elm$core$Maybe$Just(model.selectedChart),
 												A2(
 													$aforemny$material_components_web_elm$Material$Select$setLabel,
 													$elm$core$Maybe$Just('Diagram'),
@@ -17790,20 +17756,25 @@ var $author$project$Elchart$view = function (model) {
 										A2(
 											$aforemny$material_components_web_elm$Material$Select$Item$selectItem,
 											$aforemny$material_components_web_elm$Material$Select$Item$config(
-												{value: $author$project$Elchart$chartEnergi}),
-											'Energi'),
+												{value: $author$project$Elchart$chartEkonomi}),
+											'Ekonomi'),
 										_List_fromArray(
 											[
 												A2(
 												$aforemny$material_components_web_elm$Material$Select$Item$selectItem,
 												$aforemny$material_components_web_elm$Material$Select$Item$config(
-													{value: $author$project$Elchart$chartEkonomi}),
-												'Ekonomi'),
+													{value: $author$project$Elchart$chartDetail}),
+												'Ekonomi detalj'),
 												A2(
 												$aforemny$material_components_web_elm$Material$Select$Item$selectItem,
 												$aforemny$material_components_web_elm$Material$Select$Item$config(
-													{value: $author$project$Elchart$chartDetail}),
-												'Ekonomi detalj')
+													{value: $author$project$Elchart$chartEnergi}),
+												'Energi'),
+												A2(
+												$aforemny$material_components_web_elm$Material$Select$Item$selectItem,
+												$aforemny$material_components_web_elm$Material$Select$Item$config(
+													{value: $author$project$Elchart$chartSpot}),
+												'Spotpris')
 											]))
 									]))
 							])),
@@ -17833,7 +17804,7 @@ var $author$project$Elchart$view = function (model) {
 							]))
 					]))
 			]),
-		title: 'URL Interceptor'
+		title: 'Elstatistik'
 	};
 };
 var $author$project$Elchart$main = $elm$browser$Browser$application(
