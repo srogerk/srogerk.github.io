@@ -6962,7 +6962,7 @@ var $elm$http$Http$request = function (r) {
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
 var $author$project$Elchart$getElLog = function (b64cred) {
-	var url = '/timstat';
+	var url = '/timstat.json';
 	var auth = A2(
 		$elm$http$Http$header,
 		'Authorization',
