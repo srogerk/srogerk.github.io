@@ -6267,7 +6267,7 @@ var $chelovek0v$bbase64$Base64$Encode$string = function (input) {
 };
 var $author$project$Elchart$dbauth = $elm$core$Maybe$Just(
 	$chelovek0v$bbase64$Base64$Encode$encode(
-		$chelovek0v$bbase64$Base64$Encode$string('roger:karl1602')));
+		$chelovek0v$bbase64$Base64$Encode$string('')));
 var $author$project$Elchart$GotElLog = function (a) {
 	return {$: 'GotElLog', a: a};
 };
@@ -6962,7 +6962,7 @@ var $elm$http$Http$request = function (r) {
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
 var $author$project$Elchart$getElLog = function (b64cred) {
-	var url = 'http://pcdb:5984/ellog/_design/log/_view/timstat';
+	var url = '/timstat';
 	var auth = A2(
 		$elm$http$Http$header,
 		'Authorization',
