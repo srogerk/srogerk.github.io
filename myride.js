@@ -8149,6 +8149,7 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $elm$html$Html$ul = _VirtualDom_node('ul');
@@ -8174,24 +8175,26 @@ var $author$project$Myride$viewActivities = function (activities) {
 						return A2(
 							$elm$html$Html$li,
 							_List_Nil,
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$span,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($elm$core$String$left, 10, a.startDateLocal))
-										])),
-									A2(
-									$elm$html$Html$span,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(a.name)
-										]))
-								]));
+							A2(
+								$elm$core$List$map,
+								function (c) {
+									return A2(
+										$elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(c)
+											]));
+								},
+								_List_fromArray(
+									[
+										A2($elm$core$String$left, 10, a.startDateLocal),
+										a.name,
+										$elm$core$String$fromFloat(a.distance),
+										$elm$core$String$fromInt(a.movingtime),
+										$elm$core$String$fromInt(a.movingtime),
+										$elm$core$String$fromInt(a.id)
+									])));
 					},
 					activities))
 			]));
