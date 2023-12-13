@@ -8172,25 +8172,29 @@ var $author$project$Myride$viewActivities = function (activities) {
 				$elm$html$Html$table,
 				_List_Nil,
 				A2(
-					$elm$core$List$map,
-					function (a) {
-						return A2(
-							$elm$html$Html$tr,
-							_List_Nil,
-							_Utils_ap(
-								A2(
-									$elm$core$List$map,
-									function (h) {
-										return A2(
-											$elm$html$Html$th,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text(h)
-												]));
-									},
+					$elm$core$List$cons,
+					A2(
+						$elm$html$Html$tr,
+						_List_Nil,
+						A2(
+							$elm$core$List$map,
+							function (h) {
+								return A2(
+									$elm$html$Html$th,
+									_List_Nil,
 									_List_fromArray(
-										['Datum', 'Namn', 'Distans', 'Tid', 'Id'])),
+										[
+											$elm$html$Html$text(h)
+										]));
+							},
+							_List_fromArray(
+								['Datum', 'Namn', 'Distans', 'Tid', 'Id']))),
+					A2(
+						$elm$core$List$map,
+						function (a) {
+							return A2(
+								$elm$html$Html$tr,
+								_List_Nil,
 								A2(
 									$elm$core$List$map,
 									function (c) {
@@ -8209,9 +8213,9 @@ var $author$project$Myride$viewActivities = function (activities) {
 											$elm$core$String$fromFloat(a.distance),
 											$elm$core$String$fromInt(a.movingtime),
 											$elm$core$String$fromInt(a.id)
-										]))));
-					},
-					activities))
+										])));
+						},
+						activities)))
 			]));
 };
 var $truqu$elm_oauth2$OAuth$errorCodeToString = function (err) {
