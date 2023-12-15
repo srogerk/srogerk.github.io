@@ -7155,8 +7155,8 @@ var $author$project$Myride$Authenticated = function (a) {
 };
 var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
 var $author$project$Myride$Activity = F9(
-	function (id, name, distance, movingtime, elapsedtime, avaragespeed, avaragewatts, avaragecadence, startDateLocal) {
-		return {avaragecadence: avaragecadence, avaragespeed: avaragespeed, avaragewatts: avaragewatts, distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
+	function (id, name, distance, movingtime, elapsedtime, averagespeed, averagewatts, averagecadence, startDateLocal) {
+		return {averagecadence: averagecadence, averagespeed: averagespeed, averagewatts: averagewatts, distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
 	});
 var $author$project$Myride$UserInfo = F5(
 	function (firstname, lastname, profile, city, country) {
@@ -7238,17 +7238,17 @@ var $author$project$Myride$configuration = {
 			$elm$json$Json$Decode$string,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-				'avarage_cadence',
+				'average_cadence',
 				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
 				$elm$core$Maybe$Nothing,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-					'avarage_watts',
+					'average_watts',
 					A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
 					$elm$core$Maybe$Nothing,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-						'avarage_speed',
+						'average_speed',
 						A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
 						$elm$core$Maybe$Nothing,
 						A3(
@@ -8307,15 +8307,15 @@ var $author$project$Myride$viewActivities = function (activities) {
 											A2(
 											$elm$core$Maybe$withDefault,
 											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.avaragespeed)),
+											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagespeed)),
 											A2(
 											$elm$core$Maybe$withDefault,
 											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.avaragewatts)),
+											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagewatts)),
 											A2(
 											$elm$core$Maybe$withDefault,
 											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.avaragecadence)),
+											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagecadence)),
 											$elm$core$String$fromInt(a.id)
 										])));
 						},
