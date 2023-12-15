@@ -7241,14 +7241,16 @@ var $author$project$Myride$configuration = {
 				'avarage_cadence',
 				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
 				$elm$core$Maybe$Nothing,
-				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 					'avarage_watts',
-					$elm$json$Json$Decode$float,
-					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 						'avarage_speed',
-						$elm$json$Json$Decode$float,
+						A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$float),
+						$elm$core$Maybe$Nothing,
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 							'elapsed_time',
@@ -8302,8 +8304,14 @@ var $author$project$Myride$viewActivities = function (activities) {
 											a.name,
 											$elm$core$String$fromFloat(a.distance),
 											$elm$core$String$fromInt(a.movingtime),
-											$elm$core$String$fromFloat(a.avaragespeed),
-											$elm$core$String$fromFloat(a.avaragewatts),
+											A2(
+											$elm$core$Maybe$withDefault,
+											'-',
+											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.avaragespeed)),
+											A2(
+											$elm$core$Maybe$withDefault,
+											'-',
+											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.avaragewatts)),
 											A2(
 											$elm$core$Maybe$withDefault,
 											'-',
