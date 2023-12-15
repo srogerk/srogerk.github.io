@@ -7154,9 +7154,9 @@ var $author$project$Myride$Authenticated = function (a) {
 	return {$: 'Authenticated', a: a};
 };
 var $author$project$Myride$UserInfoRequested = {$: 'UserInfoRequested'};
-var $author$project$Myride$Activity = F6(
-	function (id, name, distance, movingtime, elapsedtime, startDateLocal) {
-		return {distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
+var $author$project$Myride$Activity = F9(
+	function (id, name, distance, movingtime, elapsedtime, avaragespeed, avaragewatts, avaragecadence, startDateLocal) {
+		return {avaragecadence: avaragecadence, avaragespeed: avaragespeed, avaragewatts: avaragewatts, distance: distance, elapsedtime: elapsedtime, id: id, movingtime: movingtime, name: name, startDateLocal: startDateLocal};
 	});
 var $author$project$Myride$UserInfo = F5(
 	function (firstname, lastname, profile, city, country) {
@@ -7166,19 +7166,54 @@ var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing,
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map5 = _Json_map5;
-var $elm$json$Json$Decode$map6 = _Json_map6;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Myride$configuration = {
 	activityListDecoder: $elm$json$Json$Decode$list(
-		A7(
-			$elm$json$Json$Decode$map6,
-			$author$project$Myride$Activity,
-			A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$int),
-			A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-			A2($elm$json$Json$Decode$field, 'distance', $elm$json$Json$Decode$float),
-			A2($elm$json$Json$Decode$field, 'moving_time', $elm$json$Json$Decode$int),
-			A2($elm$json$Json$Decode$field, 'elapsed_time', $elm$json$Json$Decode$int),
-			A2($elm$json$Json$Decode$field, 'start_date_local', $elm$json$Json$Decode$string))),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'start_date_local',
+			$elm$json$Json$Decode$string,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'avarage_cadence',
+				$elm$json$Json$Decode$float,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'avarage_watts',
+					$elm$json$Json$Decode$float,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'avarage_speed',
+						$elm$json$Json$Decode$float,
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'elapsed_time',
+							$elm$json$Json$Decode$int,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'moving_time',
+								$elm$json$Json$Decode$int,
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'distance',
+									$elm$json$Json$Decode$float,
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'name',
+										$elm$json$Json$Decode$string,
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'id',
+											$elm$json$Json$Decode$int,
+											$elm$json$Json$Decode$succeed($author$project$Myride$Activity))))))))))),
 	activityListEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/api/v3/athlete/activities'}),
@@ -8188,7 +8223,7 @@ var $author$project$Myride$viewActivities = function (activities) {
 										]));
 							},
 							_List_fromArray(
-								['Datum', 'Namn', 'Distans', 'Tid', 'Id']))),
+								['Datum', 'Namn', 'Distans', 'Tid', 'Hast', 'Watt', 'Cadence', 'Id']))),
 					A2(
 						$elm$core$List$map,
 						function (a) {
@@ -8212,6 +8247,9 @@ var $author$project$Myride$viewActivities = function (activities) {
 											a.name,
 											$elm$core$String$fromFloat(a.distance),
 											$elm$core$String$fromInt(a.movingtime),
+											$elm$core$String$fromFloat(a.avaragespeed),
+											$elm$core$String$fromFloat(a.avaragewatts),
+											$elm$core$String$fromFloat(a.avaragecadence),
 											$elm$core$String$fromInt(a.id)
 										])));
 						},
