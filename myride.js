@@ -8241,8 +8241,73 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $author$project$Myride$formatSeconds = function (intsec) {
+	var iSec = A2($elm$core$Basics$modBy, 60, intsec);
+	var iMin = A2($elm$core$Basics$modBy, 60, ((intsec - iSec) / 60) | 0);
+	var iHour = (((intsec - (iMin * 60)) + iSec) / 3600) | 0;
+	return (iHour > 0) ? $elm$core$String$concat(
+		_List_fromArray(
+			[
+				$elm$core$String$fromInt(iHour),
+				':',
+				A3(
+				$elm$core$String$padLeft,
+				2,
+				_Utils_chr('0'),
+				$elm$core$String$fromInt(iMin)),
+				':',
+				A3(
+				$elm$core$String$padLeft,
+				2,
+				_Utils_chr('0'),
+				$elm$core$String$fromInt(iSec))
+			])) : ((iMin > 0) ? $elm$core$String$concat(
+		_List_fromArray(
+			[
+				$elm$core$String$fromInt(iMin),
+				':',
+				A3(
+				$elm$core$String$padLeft,
+				2,
+				_Utils_chr('0'),
+				$elm$core$String$fromInt(iSec))
+			])) : $elm$core$String$fromInt(iSec));
+};
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$core$Basics$round = _Basics_round;
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$th = _VirtualDom_node('th');
@@ -8302,8 +8367,21 @@ var $author$project$Myride$viewActivities = function (activities) {
 										[
 											A2($elm$core$String$left, 10, a.startDateLocal),
 											a.name,
-											$elm$core$String$fromFloat(a.distance),
-											$elm$core$String$fromInt(a.movingtime),
+											A3(
+											$elm$core$Basics$composeL,
+											$elm$core$String$fromFloat,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$Basics$fdiv(100),
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$Basics$round,
+													A2(
+														$elm$core$Basics$composeR,
+														$elm$core$Basics$toFloat,
+														$elm$core$Basics$fdiv(10)))),
+											a.distance),
+											$author$project$Myride$formatSeconds(a.movingtime),
 											A2(
 											$elm$core$Maybe$withDefault,
 											'-',
