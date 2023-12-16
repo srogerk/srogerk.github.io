@@ -8345,7 +8345,7 @@ var $author$project$Myride$viewActivities = function (activities) {
 										]));
 							},
 							_List_fromArray(
-								['Datum', 'Namn', 'Distans', 'Tid', 'Hast', 'Watt', 'Cadence', 'Id']))),
+								['Datum', 'Namn', 'Distans', 'Tid', 'Hast', 'Watt', 'Cad', 'Id']))),
 					A2(
 						$elm$core$List$map,
 						function (a) {
@@ -8354,48 +8354,67 @@ var $author$project$Myride$viewActivities = function (activities) {
 								_List_Nil,
 								A2(
 									$elm$core$List$map,
-									function (c) {
+									function (_v0) {
+										var val = _v0.a;
+										var cls = _v0.b;
 										return A2(
 											$elm$html$Html$td,
-											_List_Nil,
 											_List_fromArray(
 												[
-													$elm$html$Html$text(c)
+													$elm$html$Html$Attributes$class(cls)
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text(val)
 												]));
 									},
-									_List_fromArray(
-										[
-											A2($elm$core$String$left, 10, a.startDateLocal),
-											a.name,
-											A3(
-											$elm$core$Basics$composeL,
-											$elm$core$String$fromFloat,
-											A2(
-												$elm$core$Basics$composeR,
-												$elm$core$Basics$fdiv(100),
+									A3(
+										$elm$core$List$map2,
+										F2(
+											function (v, c) {
+												return _Utils_Tuple2(v, 'activity-cell-fmt-' + c);
+											}),
+										_List_fromArray(
+											[
+												A2($elm$core$String$left, 10, a.startDateLocal),
+												a.name,
+												A3(
+												$elm$core$Basics$composeL,
+												$elm$core$String$fromFloat,
 												A2(
 													$elm$core$Basics$composeR,
-													$elm$core$Basics$round,
+													$elm$core$Basics$fdiv(100),
 													A2(
 														$elm$core$Basics$composeR,
-														$elm$core$Basics$toFloat,
-														$elm$core$Basics$fdiv(10)))),
-											a.distance),
-											$author$project$Myride$formatSeconds(a.movingtime),
-											A2(
-											$elm$core$Maybe$withDefault,
-											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagespeed)),
-											A2(
-											$elm$core$Maybe$withDefault,
-											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagewatts)),
-											A2(
-											$elm$core$Maybe$withDefault,
-											'-',
-											A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagecadence)),
-											$elm$core$String$fromInt(a.id)
-										])));
+														$elm$core$Basics$round,
+														A2(
+															$elm$core$Basics$composeR,
+															$elm$core$Basics$toFloat,
+															$elm$core$Basics$fdiv(10)))),
+												a.distance),
+												$author$project$Myride$formatSeconds(a.movingtime),
+												A2(
+												$elm$core$Maybe$withDefault,
+												'-',
+												A2(
+													$elm$core$Maybe$map,
+													A2(
+														$elm$core$Basics$composeL,
+														$elm$core$String$fromFloat,
+														$elm$core$Basics$mul(3.6)),
+													a.averagespeed)),
+												A2(
+												$elm$core$Maybe$withDefault,
+												'-',
+												A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagewatts)),
+												A2(
+												$elm$core$Maybe$withDefault,
+												'-',
+												A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagecadence)),
+												$elm$core$String$fromInt(a.id)
+											]),
+										_List_fromArray(
+											['L', 'L', 'R', 'R', 'R', 'R', 'R', 'R']))));
 						},
 						activities)))
 			]));
