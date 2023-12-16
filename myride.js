@@ -8246,6 +8246,35 @@ var $elm$core$Basics$composeL = F3(
 		return g(
 			f(x));
 	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Myride$decimals = F2(
+	function (p, d) {
+		var zeros = '000000000';
+		var _v0 = A2(
+			$elm$core$String$split,
+			'.',
+			$elm$core$String$fromFloat(d));
+		if (!_v0.b) {
+			return '0';
+		} else {
+			if (!_v0.b.b) {
+				var heltal = _v0.a;
+				return _Utils_ap(
+					heltal,
+					(p > 0) ? ('.' + A2($elm$core$String$left, p, zeros)) : '');
+			} else {
+				var heltal = _v0.a;
+				var _v1 = _v0.b;
+				var fract = _v1.a;
+				return _Utils_ap(
+					heltal,
+					(p > 0) ? ('.' + A2(
+						$elm$core$String$left,
+						p,
+						_Utils_ap(fract, zeros))) : '');
+			}
+		}
+	});
 var $author$project$Myride$dropROUVY = function (s) {
 	return A2($elm$core$String$startsWith, 'ROUVY - ', s) ? A2($elm$core$String$dropLeft, 8, s) : s;
 };
@@ -8308,9 +8337,7 @@ var $author$project$Myride$formatSeconds = function (intsec) {
 				$elm$core$String$fromInt(iSec))
 			])) : $elm$core$String$fromInt(iSec));
 };
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
-var $elm$core$Basics$round = _Basics_round;
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$th = _VirtualDom_node('th');
@@ -8381,30 +8408,31 @@ var $author$project$Myride$viewActivities = function (activities) {
 											[
 												A2($elm$core$String$left, 10, a.startDateLocal),
 												$author$project$Myride$dropROUVY(a.name),
-												$elm$core$String$fromFloat(
-												function (d) {
-													return d / 10;
-												}(
-													$elm$core$Basics$round(a.distance / 100))),
+												A2($author$project$Myride$decimals, 1, a.distance / 1000),
 												$author$project$Myride$formatSeconds(a.movingtime),
+												A3(
+												$elm$core$Basics$composeL,
+												$elm$core$Maybe$withDefault('-'),
+												$elm$core$Maybe$map(
+													A2(
+														$elm$core$Basics$composeL,
+														$author$project$Myride$decimals(1),
+														$elm$core$Basics$mul(3.6))),
+												a.averagespeed),
 												A2(
 												$elm$core$Maybe$withDefault,
 												'-',
 												A2(
 													$elm$core$Maybe$map,
-													A2(
-														$elm$core$Basics$composeL,
-														$elm$core$String$fromFloat,
-														$elm$core$Basics$mul(3.6)),
-													a.averagespeed)),
+													$author$project$Myride$decimals(1),
+													a.averagewatts)),
 												A2(
 												$elm$core$Maybe$withDefault,
 												'-',
-												A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagewatts)),
 												A2(
-												$elm$core$Maybe$withDefault,
-												'-',
-												A2($elm$core$Maybe$map, $elm$core$String$fromFloat, a.averagecadence)),
+													$elm$core$Maybe$map,
+													$author$project$Myride$decimals(1),
+													a.averagecadence)),
 												$elm$core$String$fromInt(a.id)
 											]),
 										_List_fromArray(
