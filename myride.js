@@ -8246,6 +8246,9 @@ var $elm$core$Basics$composeL = F3(
 		return g(
 			f(x));
 	});
+var $author$project$Myride$dropROUVY = function (s) {
+	return A2($elm$core$String$startsWith, 'ROUVY - ', s) ? A2($elm$core$String$dropLeft, 8, s) : s;
+};
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
@@ -8377,21 +8380,12 @@ var $author$project$Myride$viewActivities = function (activities) {
 										_List_fromArray(
 											[
 												A2($elm$core$String$left, 10, a.startDateLocal),
-												a.name,
-												A3(
-												$elm$core$Basics$composeL,
-												$elm$core$String$fromFloat,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$Basics$fdiv(100),
-													A2(
-														$elm$core$Basics$composeR,
-														$elm$core$Basics$round,
-														A2(
-															$elm$core$Basics$composeR,
-															$elm$core$Basics$toFloat,
-															$elm$core$Basics$fdiv(10)))),
-												a.distance),
+												$author$project$Myride$dropROUVY(a.name),
+												$elm$core$String$fromFloat(
+												function (d) {
+													return d / 10;
+												}(
+													$elm$core$Basics$round(a.distance / 100))),
 												$author$project$Myride$formatSeconds(a.movingtime),
 												A2(
 												$elm$core$Maybe$withDefault,
