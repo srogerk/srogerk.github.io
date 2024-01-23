@@ -7088,7 +7088,7 @@ var $author$project$Myride$init = F3(
 		var redirectUri = _Utils_update(
 			origin,
 			{fragment: $elm$core$Maybe$Nothing, query: $elm$core$Maybe$Nothing});
-		var zeroModel = {activities: _List_Nil, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing};
+		var zeroModel = {activities: _List_Nil, activityOffset: 0, activityRoom: 20, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing};
 		var clearUrl = A2(
 			$elm$browser$Browser$Navigation$replaceUrl,
 			navigationKey,
@@ -7165,6 +7165,18 @@ var $author$project$Myride$UserInfo = F5(
 var $author$project$Myride$defaultHttpsUrl = {fragment: $elm$core$Maybe$Nothing, host: 'www.strava.com', path: '', port_: $elm$core$Maybe$Nothing, protocol: $elm$url$Url$Https, query: $elm$core$Maybe$Nothing};
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$url$Url$Builder$QueryParameter = F2(
+	function (a, b) {
+		return {$: 'QueryParameter', a: a, b: b};
+	});
+var $elm$url$Url$percentEncode = _Url_percentEncode;
+var $elm$url$Url$Builder$int = F2(
+	function (key, value) {
+		return A2(
+			$elm$url$Url$Builder$QueryParameter,
+			$elm$url$Url$percentEncode(key),
+			$elm$core$String$fromInt(value));
+	});
 var $elm$json$Json$Decode$map5 = _Json_map5;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$andThen = _Json_andThen;
@@ -7230,6 +7242,21 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			decoder);
 	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$url$Url$Builder$toQueryPair = function (_v0) {
+	var key = _v0.a;
+	var value = _v0.b;
+	return key + ('=' + value);
+};
+var $elm$url$Url$Builder$toQuery = function (parameters) {
+	if (!parameters.b) {
+		return '';
+	} else {
+		return '?' + A2(
+			$elm$core$String$join,
+			'&',
+			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
+	}
+};
 var $author$project$Myride$configuration = {
 	activityListDecoder: $elm$json$Json$Decode$list(
 		A3(
@@ -7272,9 +7299,21 @@ var $author$project$Myride$configuration = {
 											'id',
 											$elm$json$Json$Decode$int,
 											$elm$json$Json$Decode$succeed($author$project$Myride$Activity))))))))))),
-	activityListEndpoint: _Utils_update(
-		$author$project$Myride$defaultHttpsUrl,
-		{path: '/api/v3/athlete/activities'}),
+	activityListEndpoint: F2(
+		function (page, perpage) {
+			return _Utils_update(
+				$author$project$Myride$defaultHttpsUrl,
+				{
+					path: '/api/v3/athlete/activities',
+					query: $elm$core$Maybe$Just(
+						$elm$url$Url$Builder$toQuery(
+							_List_fromArray(
+								[
+									A2($elm$url$Url$Builder$int, 'page', page),
+									A2($elm$url$Url$Builder$int, 'per_page', perpage)
+								])))
+				});
+		}),
 	authorizationEndpoint: _Utils_update(
 		$author$project$Myride$defaultHttpsUrl,
 		{path: '/oauth/authorize'}),
@@ -7622,11 +7661,6 @@ var $truqu$elm_oauth2$Internal$makeRequest = F5(
 			url: $elm$url$Url$toString(url)
 		};
 	});
-var $elm$url$Url$Builder$QueryParameter = F2(
-	function (a, b) {
-		return {$: 'QueryParameter', a: a, b: b};
-	});
-var $elm$url$Url$percentEncode = _Url_percentEncode;
 var $elm$url$Url$Builder$string = F2(
 	function (key, value) {
 		return A2(
@@ -7634,21 +7668,6 @@ var $elm$url$Url$Builder$string = F2(
 			$elm$url$Url$percentEncode(key),
 			$elm$url$Url$percentEncode(value));
 	});
-var $elm$url$Url$Builder$toQueryPair = function (_v0) {
-	var key = _v0.a;
-	var value = _v0.b;
-	return key + ('=' + value);
-};
-var $elm$url$Url$Builder$toQuery = function (parameters) {
-	if (!parameters.b) {
-		return '';
-	} else {
-		return '?' + A2(
-			$elm$core$String$join,
-			'&',
-			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
-	}
-};
 var $truqu$elm_oauth2$Internal$urlAddExtraFields = F2(
 	function (extraFields, zero) {
 		return A3(
@@ -7899,6 +7918,7 @@ var $author$project$Myride$getAccessToken = F3(
 var $author$project$Myride$GotActivityList = function (a) {
 	return {$: 'GotActivityList', a: a};
 };
+var $author$project$Myride$activityListChunkSize = 10;
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $truqu$elm_oauth2$OAuth$tokenToString = function (_v0) {
 	var t = _v0.a;
@@ -7911,8 +7931,8 @@ var $truqu$elm_oauth2$OAuth$useToken = function (token) {
 			'Authorization',
 			$truqu$elm_oauth2$OAuth$tokenToString(token)));
 };
-var $author$project$Myride$getActivityList = F2(
-	function (_v0, token) {
+var $author$project$Myride$getActivityListChunk = F3(
+	function (_v0, token, chunk) {
 		var activityListDecoder = _v0.activityListDecoder;
 		var activityListEndpoint = _v0.activityListEndpoint;
 		return $elm$http$Http$request(
@@ -7926,7 +7946,8 @@ var $author$project$Myride$getActivityList = F2(
 				method: 'GET',
 				timeout: $elm$core$Maybe$Nothing,
 				tracker: $elm$core$Maybe$Nothing,
-				url: $elm$url$Url$toString(activityListEndpoint)
+				url: $elm$url$Url$toString(
+					A2(activityListEndpoint, chunk, $author$project$Myride$activityListChunkSize))
 			});
 	});
 var $author$project$Myride$GotUserInfo = function (a) {
@@ -8061,6 +8082,20 @@ var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrlWith = F3(
 			{clientId: clientId, redirectUri: redirectUri, scope: scope, state: state, url: url});
 	});
 var $truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl = A2($truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrlWith, $truqu$elm_oauth2$OAuth$Code, $elm$core$Dict$empty);
+var $author$project$Myride$moreActivitiesNeeded = function (model) {
+	var _v0 = $elm$core$List$reverse(model.activities);
+	if (!_v0.b) {
+		return true;
+	} else {
+		var chunk = _v0.a;
+		return (_Utils_cmp(
+			$elm$core$List$length(chunk),
+			$author$project$Myride$activityListChunkSize) < 0) ? false : (_Utils_cmp(
+			$elm$core$List$length(
+				$elm$core$List$concat(model.activities)),
+			model.activityOffset + model.activityRoom) < 0);
+	}
+};
 var $author$project$Myride$update = F2(
 	function (msg, model) {
 		var _v0 = _Utils_Tuple2(model.flow, msg);
@@ -8175,12 +8210,23 @@ var $author$project$Myride$update = F2(
 							case 'Authenticated':
 								switch (_v0.b.a.a.$) {
 									case 'GotActivityList':
+										var token = _v0.a.a;
 										var activityList = _v0.b.a.a.a;
+										var newmodel = _Utils_update(
+											model,
+											{
+												activities: _Utils_ap(
+													model.activities,
+													_List_fromArray(
+														[activityList]))
+											});
 										return _Utils_Tuple2(
-											_Utils_update(
-												model,
-												{activities: activityList}),
-											$elm$core$Platform$Cmd$none);
+											newmodel,
+											$author$project$Myride$moreActivitiesNeeded(newmodel) ? A3(
+												$author$project$Myride$getActivityListChunk,
+												$author$project$Myride$configuration,
+												token,
+												1 + $elm$core$List$length(model.activities)) : $elm$core$Platform$Cmd$none);
 									case 'GotUserInfo':
 										var token = _v0.a.a;
 										var userInfo = _v0.b.a.a.a;
@@ -8190,7 +8236,7 @@ var $author$project$Myride$update = F2(
 												{
 													userInfo: $elm$core$Maybe$Just(userInfo)
 												}),
-											A2($author$project$Myride$getActivityList, $author$project$Myride$configuration, token));
+											A3($author$project$Myride$getActivityListChunk, $author$project$Myride$configuration, token, 1));
 									default:
 										break _v0$9;
 								}
@@ -8219,6 +8265,27 @@ var $author$project$Myride$update = F2(
 var $author$project$Myride$SignInRequested = {$: 'SignInRequested'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -8698,7 +8765,11 @@ var $author$project$Myride$viewBody = F2(
 								$author$project$Myride$viewErrored(err));
 					}
 				}()),
-				$author$project$Myride$viewActivities(model.activities),
+				$author$project$Myride$viewActivities(
+				A2(
+					$elm$core$List$drop,
+					model.activityOffset,
+					$elm$core$List$concat(model.activities))),
 				$author$project$Myride$viewLog(model.log)
 			]);
 	});
