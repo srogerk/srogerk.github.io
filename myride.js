@@ -8098,8 +8098,25 @@ var $author$project$Myride$moreActivitiesNeeded = function (model) {
 };
 var $author$project$Myride$update = F2(
 	function (msg, model) {
+		var getMoreActivitiesIfNeeded = F2(
+			function (tok, _v9) {
+				var m0 = _v9.a;
+				var cmd0 = _v9.b;
+				return $author$project$Myride$moreActivitiesNeeded(m0) ? _Utils_Tuple2(
+					m0,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								cmd0,
+								A3(
+								$author$project$Myride$getActivityListChunk,
+								$author$project$Myride$configuration,
+								tok,
+								1 + $elm$core$List$length(m0.activities))
+							]))) : _Utils_Tuple2(m0, cmd0);
+			});
 		var _v0 = _Utils_Tuple2(model.flow, msg);
-		_v0$9:
+		_v0$10:
 		while (true) {
 			switch (_v0.b.$) {
 				case 'SignInRequested':
@@ -8112,7 +8129,7 @@ var $author$project$Myride$update = F2(
 								{flow: $author$project$Myride$Idle}),
 							$author$project$Myride$genRandomBytes(16));
 					} else {
-						break _v0$9;
+						break _v0$10;
 					}
 				case 'GotRandomBytes':
 					if (_v0.a.$ === 'Idle') {
@@ -8135,7 +8152,7 @@ var $author$project$Myride$update = F2(
 								$elm$url$Url$toString(
 									$truqu$elm_oauth2$OAuth$AuthorizationCode$makeAuthorizationUrl(authorization))));
 					} else {
-						break _v0$9;
+						break _v0$10;
 					}
 				case 'AccessTokenRequested':
 					if (_v0.a.$ === 'Authorized') {
@@ -8149,7 +8166,7 @@ var $author$project$Myride$update = F2(
 								}),
 							A3($author$project$Myride$getAccessToken, $author$project$Myride$configuration, model.redirectUri, code));
 					} else {
-						break _v0$9;
+						break _v0$10;
 					}
 				case 'UserInfoRequested':
 					if (_v0.a.$ === 'Authenticated') {
@@ -8163,7 +8180,7 @@ var $author$project$Myride$update = F2(
 								}),
 							A2($author$project$Myride$getUserInfo, $author$project$Myride$configuration, token));
 					} else {
-						break _v0$9;
+						break _v0$10;
 					}
 				case 'HttpResponse':
 					if (_v0.b.a.$ === 'Err') {
@@ -8205,28 +8222,26 @@ var $author$project$Myride$update = F2(
 											}),
 										A2($andrewMacmurray$elm_delay$Delay$after, 50, $author$project$Myride$UserInfoRequested));
 								} else {
-									break _v0$9;
+									break _v0$10;
 								}
 							case 'Authenticated':
 								switch (_v0.b.a.a.$) {
 									case 'GotActivityList':
 										var token = _v0.a.a;
 										var activityList = _v0.b.a.a.a;
-										var newmodel = _Utils_update(
-											model,
-											{
-												activities: _Utils_ap(
-													model.activities,
-													_List_fromArray(
-														[activityList]))
-											});
-										return _Utils_Tuple2(
-											newmodel,
-											$author$project$Myride$moreActivitiesNeeded(newmodel) ? A3(
-												$author$project$Myride$getActivityListChunk,
-												$author$project$Myride$configuration,
-												token,
-												1 + $elm$core$List$length(model.activities)) : $elm$core$Platform$Cmd$none);
+										return A2(
+											getMoreActivitiesIfNeeded,
+											token,
+											_Utils_Tuple2(
+												_Utils_update(
+													model,
+													{
+														activities: _Utils_ap(
+															model.activities,
+															_List_fromArray(
+																[activityList]))
+													}),
+												$elm$core$Platform$Cmd$none));
 									case 'GotUserInfo':
 										var token = _v0.a.a;
 										var userInfo = _v0.b.a.a.a;
@@ -8238,10 +8253,10 @@ var $author$project$Myride$update = F2(
 												}),
 											A3($author$project$Myride$getActivityListChunk, $author$project$Myride$configuration, token, 1));
 									default:
-										break _v0$9;
+										break _v0$10;
 								}
 							default:
-								break _v0$9;
+								break _v0$10;
 						}
 					}
 				case 'SignOutRequested':
@@ -8254,10 +8269,25 @@ var $author$project$Myride$update = F2(
 							$elm$browser$Browser$Navigation$load(
 								$elm$url$Url$toString(model.redirectUri)));
 					} else {
-						break _v0$9;
+						break _v0$10;
+					}
+				case 'ScrollActivities':
+					if (_v0.a.$ === 'Authenticated') {
+						var token = _v0.a.a;
+						var n = _v0.b.a;
+						return A2(
+							getMoreActivitiesIfNeeded,
+							token,
+							_Utils_Tuple2(
+								_Utils_update(
+									model,
+									{activityOffset: model.activityOffset + n}),
+								$elm$core$Platform$Cmd$none));
+					} else {
+						break _v0$10;
 					}
 				default:
-					break _v0$9;
+					break _v0$10;
 			}
 		}
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -8616,6 +8646,52 @@ var $author$project$Myride$viewLog = function (log) {
 					log))
 			]));
 };
+var $author$project$Myride$ScrollActivities = function (a) {
+	return {$: 'ScrollActivities', a: a};
+};
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $author$project$Myride$viewUpDownButton = function (offset) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Myride$ScrollActivities(-1)),
+						$elm$html$Html$Attributes$disabled(offset < 1)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('<')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Myride$ScrollActivities(1))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('>')
+					]))
+			]));
+};
 var $author$project$Myride$SignOutRequested = {$: 'SignOutRequested'};
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -8627,58 +8703,55 @@ var $elm$html$Html$Attributes$src = function (url) {
 var $author$project$Myride$viewUserInfo = F2(
 	function (_v0, ui) {
 		var btnClass = _v0.btnClass;
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('flex'),
-						$elm$html$Html$Attributes$class('flex-column')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$img,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('avatar'),
-								$elm$html$Html$Attributes$src(ui.profile)
-							]),
-						_List_Nil),
-						A2(
-						$elm$html$Html$h3,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(ui.firstname + (' ' + ui.lastname))
-							])),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(ui.city + (', ' + ui.country))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$button,
-								_List_fromArray(
-									[
-										$elm$html$Html$Events$onClick($author$project$Myride$SignOutRequested),
-										btnClass
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Sign out')
-									]))
-							]))
-					]))
-			]);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex'),
+					$elm$html$Html$Attributes$class('flex-column')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$img,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('avatar'),
+							$elm$html$Html$Attributes$src(ui.profile)
+						]),
+					_List_Nil),
+					A2(
+					$elm$html$Html$h3,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(ui.firstname + (' ' + ui.lastname))
+						])),
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(ui.city + (', ' + ui.country))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick($author$project$Myride$SignOutRequested),
+									btnClass
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Sign out')
+								]))
+						]))
+				]));
 	});
 var $author$project$Myride$viewBody = F2(
 	function (config, model) {
@@ -8745,7 +8818,16 @@ var $author$project$Myride$viewBody = F2(
 									]);
 							} else {
 								var userInfo_ = _v1.a;
-								return A2($author$project$Myride$viewUserInfo, config, userInfo_);
+								return _List_fromArray(
+									[
+										A2($author$project$Myride$viewUserInfo, config, userInfo_),
+										$author$project$Myride$viewUpDownButton(model.activityOffset),
+										$author$project$Myride$viewActivities(
+										A2(
+											$elm$core$List$drop,
+											model.activityOffset,
+											$elm$core$List$concat(model.activities)))
+									]);
 							}
 						default:
 							var err = _v0.a;
@@ -8759,17 +8841,15 @@ var $author$project$Myride$viewBody = F2(
 											]);
 									} else {
 										var userInfo_ = _v2.a;
-										return A2($author$project$Myride$viewUserInfo, config, userInfo_);
+										return _List_fromArray(
+											[
+												A2($author$project$Myride$viewUserInfo, config, userInfo_)
+											]);
 									}
 								}(),
 								$author$project$Myride$viewErrored(err));
 					}
 				}()),
-				$author$project$Myride$viewActivities(
-				A2(
-					$elm$core$List$drop,
-					model.activityOffset,
-					$elm$core$List$concat(model.activities))),
 				$author$project$Myride$viewLog(model.log)
 			]);
 	});
