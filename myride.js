@@ -7306,12 +7306,15 @@ var $author$project$Myride$configuration = {
 				{
 					path: '/api/v3/athlete/activities',
 					query: $elm$core$Maybe$Just(
-						$elm$url$Url$Builder$toQuery(
-							_List_fromArray(
-								[
-									A2($elm$url$Url$Builder$int, 'page', page),
-									A2($elm$url$Url$Builder$int, 'per_page', perpage)
-								])))
+						A2(
+							$elm$core$String$dropLeft,
+							1,
+							$elm$url$Url$Builder$toQuery(
+								_List_fromArray(
+									[
+										A2($elm$url$Url$Builder$int, 'page', page),
+										A2($elm$url$Url$Builder$int, 'per_page', perpage)
+									]))))
 				});
 		}),
 	authorizationEndpoint: _Utils_update(
