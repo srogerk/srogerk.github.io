@@ -7088,7 +7088,7 @@ var $author$project$Myride$init = F3(
 		var redirectUri = _Utils_update(
 			origin,
 			{fragment: $elm$core$Maybe$Nothing, query: $elm$core$Maybe$Nothing});
-		var zeroModel = {activities: _List_Nil, activityOffset: 0, activityRoom: 20, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing};
+		var zeroModel = {activities: _List_Nil, activityOffset: 0, activityRoom: 15, flow: $author$project$Myride$Idle, log: _List_Nil, redirectUri: redirectUri, userInfo: $elm$core$Maybe$Nothing};
 		var clearUrl = A2(
 			$elm$browser$Browser$Navigation$replaceUrl,
 			navigationKey,
@@ -8801,6 +8801,18 @@ var $author$project$Myride$viewUpDownButton = function (offset) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onClick(
+						$author$project$Myride$ScrollActivities((-1) * offset)),
+						$elm$html$Html$Attributes$disabled(offset < 1)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('<<')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
 						$author$project$Myride$ScrollActivities(-1)),
 						$elm$html$Html$Attributes$disabled(offset < 1)
 					]),
@@ -8818,6 +8830,17 @@ var $author$project$Myride$viewUpDownButton = function (offset) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text('>')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Myride$ScrollActivities(10))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('>>')
 					]))
 			]));
 };
